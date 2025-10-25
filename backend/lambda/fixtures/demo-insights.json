@@ -1,0 +1,93 @@
+{
+  "playerId": "demo",
+  "generatedAt": "2024-10-26T12:00:00Z",
+  "heroSummary": {
+    "title": "The Comeback King of Season 2024",
+    "story": "Your season told the story of resilience and adaptation. Starting the year with a rough 45% win rate on tanks, you discovered your true calling in the bot lane. By mid-season, your Jinx mechanics had evolved from 'respectable' to 'terrifying,' with a signature late-game power spike that turned 15 losses into comeback victories. Your teammates learned to trust the '20-minute Jinx insurance policy.' The data reveals a player who transforms defeats into lessons—your average CS/min jumped from 5.8 to 7.1 over 6 months. This wasn't luck; this was deliberate mastery.",
+    "keyMoment": {
+      "matchId": "NA1_4567890123",
+      "description": "The legendary 1v3 outplay at Baron pit that won the game",
+      "timestamp": 1823
+    },
+    "seasonGrade": "A+",
+    "vibe": "🔥 Clutch Master"
+  },
+  "coachingTips": [
+    {
+      "category": "positioning",
+      "title": "Master the 'Auto-Spacing' Drill",
+      "problem": "You're dying 20% more in the 10-15 minute mark compared to top ADC players in your elo.",
+      "solution": "Spend 10 minutes daily in Practice Tool practicing 'attack-move-click' combos while maintaining 550 range from training dummies.",
+      "measurableGoal": "Reduce mid-game deaths from 2.3 to 1.5 per game over 20 matches.",
+      "whyItMatters": "Your late-game carry potential is elite, but you lose 28% of games before reaching it. Surviving mid-game unlocks your win condition.",
+      "evidenceLinks": [
+        "NA1_4567890124",
+        "NA1_4567890127"
+      ]
+    },
+    {
+      "category": "vision",
+      "title": "Upgrade Your Support's Vision Score",
+      "problem": "Your vision score is 18% below the 75th percentile for ADCs in Platinum+.",
+      "solution": "Buy control wards on every back (even if you have one). Place defensively in river pixel brush during lane phase.",
+      "measurableGoal": "Increase vision score from 28.5 to 35+ per game.",
+      "whyItMatters": "Your KDA jumps from 2.9 to 4.1 in games where your team has vision control. You're mechanically ready for Diamond—vision discipline is the gap.",
+      "evidenceLinks": [
+        "NA1_4567890130"
+      ]
+    },
+    {
+      "category": "champion-pool",
+      "title": "Add a Safe Blind Pick",
+      "problem": "61% of your losses occur when Jinx is banned or picked. Your backup champions (Caitlyn, Ashe) have 8% lower win rates.",
+      "solution": "Learn Ezreal (safe into most matchups) or Kai'Sa (similar late-game fantasy). Dedicate 15 normals to building muscle memory.",
+      "measurableGoal": "Achieve 52%+ win rate on secondary pick over 20 ranked games.",
+      "whyItMatters": "Climbing requires consistency across patches and metas. Right now, you're a Jinx one-trick with a vulnerability.",
+      "evidenceLinks": []
+    }
+  ],
+  "playstyleRadar": {
+    "categories": ["Aggression", "Vision Control", "Objective Focus", "Teamfight Positioning", "Laning Dominance", "Adaptability"],
+    "scores": [72, 58, 81, 88, 65, 79],
+    "percentiles": [68, 42, 85, 92, 55, 74],
+    "analysis": "You're an elite teamfighter (92nd percentile) with exceptional objective prioritization. Your weak link is vision control—addressing this single metric could unlock a full division of climb."
+  },
+  "roastMode": {
+    "title": "The Roast You Didn't Ask For",
+    "roast": "You play ADC like you're allergic to control wards. I've seen junglers with better vision scores. Your mechanics scream Diamond, but your minimap awareness whispers 'what's a minimap?' That one game where you face-checked a bush at 35 minutes with Baron up? The enemy team is STILL laughing. Also, stop building Stormrazor third item on Jinx. It's not Season 8 anymore, friend.",
+    "savage": true
+  },
+  "hiddenGems": [
+    {
+      "title": "The 'Invisible Carry' Phenomenon",
+      "insight": "You win 68% of games where you have fewer than 10 kills but more than 15 assists. You're not a KDA player—you're a win-condition enabler.",
+      "matchExamples": [
+        "NA1_4567890145",
+        "NA1_4567890158"
+      ]
+    },
+    {
+      "title": "Patch 13.18 Awakening",
+      "insight": "Your win rate jumped 14% after Patch 13.18 (Jinx buffs). You're not just playing the champion—you're optimizing around patch notes. That's pro-level game sense.",
+      "matchExamples": []
+    },
+    {
+      "title": "The Duo Gap",
+      "insight": "When you duo with support 'MissFortuneHater69', your win rate is 63%. Solo queue? 51%. The synergy is real. Duo more.",
+      "matchExamples": [
+        "NA1_4567890167"
+      ]
+    }
+  ],
+  "socialShareCard": {
+    "headline": "Season 2024: The Comeback King",
+    "stats": [
+      "342 Games Played",
+      "54.2% Win Rate",
+      "3.2 KDA"
+    ],
+    "quote": "Turned 15 losses into comeback victories with late-game Jinx mastery.",
+    "backgroundColor": "#1a1a2e",
+    "accentColor": "#ff6b6b"
+  }
+}

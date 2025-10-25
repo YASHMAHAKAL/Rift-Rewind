@@ -1,0 +1,71 @@
+{
+  "playerId": "demo",
+  "puuid": "demo-puuid-1234567890",
+  "summonerName": "Demo Player",
+  "region": "NA1",
+  "profileIconId": 4568,
+  "summonerLevel": 234,
+  "stats": {
+    "totalMatches": 342,
+    "rankedMatches": 287,
+    "normalMatches": 55,
+    "winRate": 54.2,
+    "overallKDA": 3.2,
+    "avgKills": 8.3,
+    "avgDeaths": 4.1,
+    "avgAssists": 9.8,
+    "avgCSPerMin": 6.2,
+    "avgVisionScore": 28.5,
+    "avgGoldPerMin": 415,
+    "favoriteRole": "ADC",
+    "topChampions": [
+      { "championName": "Jinx", "games": 45, "winRate": 58.3 },
+      { "championName": "Caitlyn", "games": 38, "winRate": 52.1 },
+      { "championName": "Ashe", "games": 32, "winRate": 61.2 }
+    ]
+  },
+  "recentMatches": [
+    {
+      "matchId": "NA1_4567890123",
+      "gameCreation": 1698345600000,
+      "gameDuration": 1823,
+      "win": true,
+      "championName": "Jinx",
+      "kills": 12,
+      "deaths": 3,
+      "assists": 8,
+      "kda": 6.67,
+      "csPerMin": 7.1,
+      "goldEarned": 14523,
+      "visionScore": 32
+    },
+    {
+      "matchId": "NA1_4567890124",
+      "gameCreation": 1698259200000,
+      "gameDuration": 2145,
+      "win": false,
+      "championName": "Caitlyn",
+      "kills": 5,
+      "deaths": 7,
+      "assists": 12,
+      "kda": 2.43,
+      "csPerMin": 6.8,
+      "goldEarned": 12834,
+      "visionScore": 25
+    },
+    {
+      "matchId": "NA1_4567890125",
+      "gameCreation": 1698172800000,
+      "gameDuration": 1956,
+      "win": true,
+      "championName": "Ashe",
+      "kills": 9,
+      "deaths": 2,
+      "assists": 15,
+      "kda": 12.0,
+      "csPerMin": 6.5,
+      "goldEarned": 13456,
+      "visionScore": 38
+    }
+  ]
+}

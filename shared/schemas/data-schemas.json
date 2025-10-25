@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RiftRewindDataSchemas",
+  "definitions": {
+    "Player": {
+      "type": "object",
+      "required": ["id", "puuid", "summonerName", "region", "createdAt", "lastUpdated"],
+      "properties": {
+        "id": { "type": "string" },
+        "puuid": { "type": "string" },
+        "summonerName": { "type": "string" },
+        "region": { "type": "string", "enum": ["NA1", "EUW1", "EUN1", "KR", "BR1", "LA1", "LA2", "OC1", "TR1", "RU", "JP1"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Match": {
+      "type": "object",
+      "required": ["matchId", "gameCreation", "gameDuration", "queueId", "participants"],
+      "properties": {
+        "matchId": { "type": "string" },
+        "gameCreation": { "type": "number" },
+        "gameDuration": { "type": "number" },
+        "gameMode": { "type": "string" },
+        "gameType": { "type": "string" },
+        "queueId": { "type": "number" },
+        "platformId": { "type": "string" },
+        "participants": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Participant" }
+        },
+        "playerParticipantId": { "type": "number" }
+      }
+    },
+    "Participant": {
+      "type": "object",
+      "required": ["participantId", "championId", "championName", "teamId", "win", "kills", "deaths", "assists"],
+      "properties": {
+        "participantId": { "type": "number" },
+        "championId": { "type": "number" },
+        "championName": { "type": "string" },
+        "teamId": { "type": "number" },
+        "win": { "type": "boolean" },
+        "kills": { "type": "number" },
+        "deaths": { "type": "number" },
+        "assists": { "type": "number" },
+        "totalMinionsKilled": { "type": "number" },
+        "neutralMinionsKilled": { "type": "number" },
+        "goldEarned": { "type": "number" },
+        "totalDamageDealt": { "type": "number" },
+        "totalDamageDealtToChampions": { "type": "number" },
+        "visionScore": { "type": "number" },
+        "wardsPlaced": { "type": "number" },
+        "wardsKilled": { "type": "number" },
+        "role": { "type": "string" },
+        "lane": { "type": "string" }
+      }
+    },
+    "PlayerStats": {
+      "type": "object",
+      "required": ["playerId", "totalMatches", "winRate", "kda"],
+      "properties": {
+        "playerId": { "type": "string" },
+        "totalMatches": { "type": "number" },
+        "totalWins": { "type": "number" },
+        "totalLosses": { "type": "number" },
+        "winRate": { "type": "number", "minimum": 0, "maximum": 100 },
+        "kda": { "type": "number" },
+        "avgKills": { "type": "number" },
+        "avgDeaths": { "type": "number" },
+        "avgAssists": { "type": "number" },
+        "avgCS": { "type": "number" },
+        "avgCSPerMin": { "type": "number" },
+        "avgGoldPerMin": { "type": "number" },
+        "avgVisionScore": { "type": "number" },
+        "topChampions": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ChampionStat" }
+        },
+        "lastCalculated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ChampionStat": {
+      "type": "object",
+      "required": ["championId", "championName", "games", "wins", "winRate", "kda"],
+      "properties": {
+        "championId": { "type": "number" },
+        "championName": { "type": "string" },
+        "games": { "type": "number" },
+        "wins": { "type": "number" },
+        "winRate": { "type": "number" },
+        "kda": { "type": "number" },
+        "avgKills": { "type": "number" },
+        "avgDeaths": { "type": "number" },
+        "avgAssists": { "type": "number" }
+      }
+    },
+    "PlayerInsights": {
+      "type": "object",
+      "required": ["playerId", "heroSummary", "coachingTips", "playstyleRadar", "generatedAt"],
+      "properties": {
+        "playerId": { "type": "string" },
+        "heroSummary": { "$ref": "#/definitions/HeroSummary" },
+        "coachingTips": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/CoachingTip" }
+        },
+        "playstyleRadar": { "$ref": "#/definitions/PlaystyleRadar" },
+        "roastMode": { "$ref": "#/definitions/RoastInsight" },
+        "hiddenGems": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/HiddenGem" }
+        },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "cacheExpiry": { "type": "string", "format": "date-time" }
+      }
+    },
+    "HeroSummary": {
+      "type": "object",
+      "required": ["narrative", "keyHighlights", "growthAreas"],
+      "properties": {
+        "narrative": { "type": "string", "minLength": 100, "maxLength": 500 },
+        "keyHighlights": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "standoutMoments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "growthAreas": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "evidenceMatchIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "CoachingTip": {
+      "type": "object",
+      "required": ["id", "title", "description", "drill", "measurableGoal", "whyItMatters", "priority", "category"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "drill": { "type": "string" },
+        "measurableGoal": { "type": "string" },
+        "whyItMatters": { "type": "string" },
+        "priority": { "type": "string", "enum": ["high", "medium", "low"] },
+        "category": { "type": "string", "enum": ["laning", "teamfighting", "vision", "macro", "mechanics"] },
+        "evidenceMatchIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "confidenceScore": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "PlaystyleRadar": {
+      "type": "object",
+      "required": ["laning", "teamfighting", "vision", "objectiveControl", "roaming", "consistency", "mechanics", "decisionMaking"],
+      "properties": {
+        "laning": { "type": "number", "minimum": 0, "maximum": 100 },
+        "teamfighting": { "type": "number", "minimum": 0, "maximum": 100 },
+        "vision": { "type": "number", "minimum": 0, "maximum": 100 },
+        "objectiveControl": { "type": "number", "minimum": 0, "maximum": 100 },
+        "roaming": { "type": "number", "minimum": 0, "maximum": 100 },
+        "consistency": { "type": "number", "minimum": 0, "maximum": 100 },
+        "mechanics": { "type": "number", "minimum": 0, "maximum": 100 },
+        "decisionMaking": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "RoastInsight": {
+      "type": "object",
+      "required": ["roast", "genuineCompliment"],
+      "properties": {
+        "roast": { "type": "string", "minLength": 50, "maxLength": 200 },
+        "genuineCompliment": { "type": "string" },
+        "evidenceMatchIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "HiddenGem": {
+      "type": "object",
+      "required": ["title", "description"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "percentile": { "type": "number", "minimum": 0, "maximum": 100 },
+        "evidenceMatchIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "MatchFragment": {
+      "type": "object",
+      "required": ["fragmentId", "matchId", "playerId", "phase", "description", "outcome"],
+      "properties": {
+        "fragmentId": { "type": "string" },
+        "matchId": { "type": "string" },
+        "playerId": { "type": "string" },
+        "phase": { "type": "string", "enum": ["early", "mid", "late", "event"] },
+        "timeRange": { "type": "string" },
+        "description": { "type": "string" },
+        "stats": { "type": "object" },
+        "outcome": { "type": "string", "enum": ["positive", "neutral", "negative"] },
+        "embedding": {
+          "type": "array",
+          "items": { "type": "number" }
+        },
+        "relevanceScore": { "type": "number" }
+      }
+    }
+  }
+}
