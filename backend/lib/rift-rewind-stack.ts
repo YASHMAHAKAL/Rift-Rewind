@@ -128,10 +128,14 @@ export class RiftRewindStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/ingestion')),
-      timeout: cdk.Duration.seconds(60),
+      timeout: cdk.Duration.seconds(300), // Increased for multiple API calls
       memorySize: 512,
       role: lambdaRole,
-      environment: commonEnv,
+      environment: {
+        ...commonEnv,
+        RIOT_API_KEY: process.env.RIOT_API_KEY || 'RGAPI-demo-key',
+        PROCESSING_LAMBDA: 'rift-rewind-processing',
+      },
     });
 
     // Processing Lambda (compute stats, create fragments)
@@ -172,6 +176,9 @@ export class RiftRewindStack extends cdk.Stack {
       role: lambdaRole,
       environment: commonEnv,
     });
+
+    // Grant ingestion Lambda permission to invoke processing Lambda
+    processingLambda.grantInvoke(lambdaRole);
 
     // ========================================================================
     // API Gateway

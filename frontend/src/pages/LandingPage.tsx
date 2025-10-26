@@ -1,36 +1,36 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { SparklesIcon, ChartBarIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
 export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+      <div className="absolute inset-0 overflow-hidden opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow" />
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl"
+          className="text-center max-w-5xl"
         >
           {/* Logo/Badge */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="inline-block mb-6"
+            className="inline-block mb-8"
           >
-            <div className="glass px-6 py-3 rounded-full">
-              <span className="text-sm font-semibold text-primary-400">
-                Powered by AWS + Riot Games
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-full shadow-xl">
+              <span className="text-sm font-semibold text-cyan-300">
+                ⚡ Powered by AWS + Riot Games API
               </span>
             </div>
           </motion.div>
@@ -40,7 +40,13 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            className="text-7xl md:text-8xl font-black mb-6"
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
           >
             Rift Rewind
           </motion.h1>
@@ -49,7 +55,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="text-2xl md:text-3xl text-gray-300 mb-4"
+            className="text-3xl md:text-4xl font-bold text-white mb-4"
           >
             Your Season, Your Story
           </motion.p>
@@ -58,7 +64,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="text-lg text-gray-400 mb-12 max-w-2xl mx-auto"
+            className="text-xl text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed"
           >
             AI-powered insights and coaching from your League of Legends journey.
             Discover your strengths, unlock hidden gems, and celebrate your year on the Rift.
@@ -69,19 +75,19 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+            className="flex flex-col sm:flex-row gap-6 justify-center mb-20"
           >
             <button
               onClick={() => navigate('/dashboard')}
-              className="btn-primary text-lg px-8 py-4 shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 transition-shadow"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-5 rounded-xl shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 transition-all transform hover:scale-105"
             >
-              Open Your Yearbook
+              🎮 Open Your Yearbook
             </button>
             <button
               onClick={() => navigate('/player/demo')}
-              className="btn-secondary text-lg px-8 py-4"
+              className="bg-white/10 backdrop-blur-md border-2 border-white/30 hover:bg-white/20 text-white font-bold text-xl px-12 py-5 rounded-xl transition-all transform hover:scale-105"
             >
-              Try Demo
+              ✨ Try Demo
             </button>
           </motion.div>
 
@@ -90,20 +96,20 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2 }}
-            className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto"
+            className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
           >
             <FeatureCard
-              icon={<SparklesIcon className="w-8 h-8" />}
+              icon="✨"
               title="AI-Powered Insights"
               description="Personalized coaching tips generated from your match history"
             />
             <FeatureCard
-              icon={<ChartBarIcon className="w-8 h-8" />}
+              icon="📊"
               title="Interactive Timeline"
               description="Explore your season with beautiful visualizations"
             />
             <FeatureCard
-              icon={<TrophyIcon className="w-8 h-8" />}
+              icon="🏆"
               title="Share Your Story"
               description="Generate shareable cards for social media"
             />
@@ -114,17 +120,17 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="glass p-6 rounded-xl"
+      whileHover={{ scale: 1.05, y: -5 }}
+      className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all"
     >
-      <div className="text-primary-400 mb-3">
+      <div className="text-6xl mb-4">
         {icon}
       </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-gray-400">{description}</p>
+      <h3 className="text-2xl font-bold mb-3 text-white">{title}</h3>
+      <p className="text-base text-gray-200 leading-relaxed">{description}</p>
     </motion.div>
   );
 }
