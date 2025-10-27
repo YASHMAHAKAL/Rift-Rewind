@@ -1,0 +1,317 @@
+import { Trophy, Target, Gamepad2, Award, Lightbulb, AlertTriangle, TrendingUp, Flame, Eye, Sword, Shield, Users } from 'lucide-react';
+import { GlassCard } from './GlassCard';
+import { StatCard } from './StatCard';
+import { ChampionCard } from './ChampionCard';
+import { PlayerRadarChart } from './PlayerRadarChart';
+import { HexButton } from './HexButton';
+
+interface PlayerDetailPageProps {
+  onNavigate: (page: string) => void;
+}
+
+export function PlayerDetailPage({ onNavigate }: PlayerDetailPageProps) {
+  const topChampions = [
+    { name: 'Yasuo', games: 87, winRate: 58, mastery: 7 },
+    { name: 'Lee Sin', games: 64, winRate: 52, mastery: 6 },
+    { name: 'Zed', games: 52, winRate: 61, mastery: 7 },
+  ];
+
+  const coachingTips = [
+    {
+      icon: AlertTriangle,
+      type: 'warning',
+      title: 'Vision Control Needs Work',
+      problem: 'You average only 0.8 control wards per game',
+      solution: 'Buy at least 2 control wards per back after 15 minutes',
+      goal: 'Target: 1.5+ control wards per game',
+      color: 'text-orange-400'
+    },
+    {
+      icon: Lightbulb,
+      type: 'tip',
+      title: 'Excellent Objective Control',
+      problem: 'Your team secures 68% of dragons when you\'re alive',
+      solution: 'Keep prioritizing dragon spawns and setup vision 1 minute before',
+      goal: 'Maintain this strength!',
+      color: 'text-blue-400'
+    },
+    {
+      icon: Target,
+      type: 'improvement',
+      title: 'CS at 10 Minutes',
+      problem: 'Averaging 72 CS at 10min (70th percentile)',
+      solution: 'Practice last-hitting drills and wave management',
+      goal: 'Target: 85+ CS at 10min for next tier',
+      color: 'text-yellow-400'
+    },
+  ];
+
+  const funStats = [
+    { emoji: '🔥', title: 'Pentakill Count', value: '3', description: 'You\'re a monster!' },
+    { emoji: '😅', title: 'Flash Fails', value: '47', description: 'We\'ve all been there' },
+    { emoji: '⏰', title: 'Longest Game', value: '68:42', description: 'That was exhausting' },
+    { emoji: '💀', title: 'Most Deaths', value: '18', description: 'In a single game' },
+    { emoji: '🎯', title: 'Baron Steals', value: '2', description: 'Calculated!' },
+    { emoji: '⚡', title: 'Fastest Win', value: '14:23', description: 'Speed run champion' },
+  ];
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#010A13] via-[#0A1428] to-[#1a0f2e]">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='%23C89B3C' stroke-width='1'/%3E%3C/svg%3E")`,
+        backgroundSize: '60px 60px'
+      }}></div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <button 
+          onClick={() => onNavigate('dashboard')}
+          className="mb-6 text-[#CDBE91] hover:text-[#C89B3C] transition-colors flex items-center gap-2"
+        >
+          ← Back to Search
+        </button>
+
+        {/* Top Banner */}
+        <GlassCard className="p-8 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              {/* Profile Icon */}
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#C89B3C] to-[#0397AB] animate-pulse" style={{
+                  clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                }}></div>
+                <div className="absolute inset-1 bg-[#0A1428] overflow-hidden flex items-center justify-center" style={{
+                  clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                }}>
+                  <Trophy className="w-10 h-10 text-[#C89B3C]" />
+                </div>
+              </div>
+
+              {/* Player Info */}
+              <div>
+                <h1 className="text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#C89B3C] to-[#CDBE91] mb-2" style={{ fontWeight: 800 }}>
+                  FAKER
+                </h1>
+                <div className="flex items-center gap-4">
+                  <span className="px-3 py-1 bg-[#C89B3C]/20 border border-[#C89B3C]/50 text-[#C89B3C] text-sm uppercase tracking-wider">
+                    KR
+                  </span>
+                  <span className="text-[#F0E6D2]/70">Season 2024</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Rank Badge */}
+            <div className="text-center">
+              <div className="w-32 h-32 mx-auto mb-2 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#C89B3C] to-[#A67C2A] shadow-[0_0_40px_rgba(200,155,60,0.6)]" style={{
+                  clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                }}></div>
+                <div className="absolute inset-2 bg-[#010A13] flex items-center justify-center" style={{
+                  clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                }}>
+                  <span className="text-6xl text-[#C89B3C]" style={{ fontWeight: 800 }}>S+</span>
+                </div>
+              </div>
+              <p className="text-[#CDBE91] text-sm uppercase tracking-wider">Season Grade</p>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Hero Summary */}
+        <GlassCard className="p-8 mb-8 relative overflow-hidden">
+          {/* Background Blur */}
+          <div className="absolute inset-0 opacity-10 bg-gradient-to-r from-purple-900 via-blue-900 to-purple-900"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-3xl text-[#CDBE91] mb-4 uppercase tracking-wider">Your Story</h2>
+            <p className="text-[#F0E6D2] text-lg leading-relaxed mb-6">
+              This season, you've proven yourself as a formidable force on the Rift. With <span className="text-[#C89B3C]">432 games played</span> and an impressive <span className="text-[#C89B3C]">56% win rate</span>, you've climbed the ranks with determination. Your mastery of mechanical champions shines through, particularly your signature <span className="text-[#C89B3C]">Yasuo</span> performances. While your aggressive playstyle dominates the mid-game, there's room to refine your early vision control and CS efficiency.
+            </p>
+
+            {/* Key Stats Row */}
+            <div className="grid grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-4xl text-[#C89B3C] mb-1" style={{ fontWeight: 800 }}>432</div>
+                <div className="text-sm text-[#CDBE91]/70 uppercase tracking-wider">Total Games</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl text-green-400 mb-1" style={{ fontWeight: 800 }}>56%</div>
+                <div className="text-sm text-[#CDBE91]/70 uppercase tracking-wider">Win Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl text-[#0397AB] mb-1" style={{ fontWeight: 800 }}>3.2</div>
+                <div className="text-sm text-[#CDBE91]/70 uppercase tracking-wider">KDA</div>
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Stats Grid */}
+        <div className="mb-8">
+          <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+            <Award className="w-6 h-6" />
+            Performance Metrics
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard icon={Sword} label="Avg Kills" value="8.4" subtext="+12% from last month" trend="up" />
+            <StatCard icon={Shield} label="Avg Deaths" value="5.2" subtext="-8% from last month" trend="down" />
+            <StatCard icon={Users} label="Avg Assists" value="9.1" subtext="+5% from last month" trend="up" />
+          </div>
+        </div>
+
+        {/* Top Champions */}
+        <div className="mb-8">
+          <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+            <Trophy className="w-6 h-6" />
+            Champion Pool
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {topChampions.map((champion, index) => (
+              <ChampionCard key={index} {...champion} />
+            ))}
+          </div>
+        </div>
+
+        {/* AI Coaching Tips */}
+        <div className="mb-8">
+          <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+            <Lightbulb className="w-6 h-6" />
+            AI Coaching Insights
+          </h2>
+          <div className="space-y-4">
+            {coachingTips.map((tip, index) => (
+              <GlassCard key={index} className="p-6" glowColor={tip.type === 'tip' ? 'blue' : 'gold'}>
+                <div className="flex items-start gap-4">
+                  <div className={`w-12 h-12 bg-gradient-to-br from-[#C89B3C] to-[#A67C2A] rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <tip.icon className="w-6 h-6 text-[#010A13]" />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h3 className={`text-xl ${tip.color} mb-2 uppercase tracking-wide`}>{tip.title}</h3>
+                    <p className="text-[#F0E6D2]/70 mb-2">{tip.problem}</p>
+                    <p className="text-[#CDBE91] mb-2">
+                      <strong>Solution:</strong> {tip.solution}
+                    </p>
+                    <p className="text-[#C89B3C] text-sm">
+                      <strong>Goal:</strong> {tip.goal}
+                    </p>
+                  </div>
+
+                  <button className="text-[#0397AB] hover:text-[#C89B3C] transition-colors text-sm underline whitespace-nowrap">
+                    View Evidence →
+                  </button>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+
+        {/* Playstyle Radar Chart */}
+        <div className="mb-8">
+          <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+            <Target className="w-6 h-6" />
+            Playstyle Analysis
+          </h2>
+          <GlassCard className="p-8">
+            <PlayerRadarChart />
+            <div className="mt-6 grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>85%</div>
+                <div className="text-sm text-[#CDBE91]/70">Objective Focus</div>
+              </div>
+              <div>
+                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>75%</div>
+                <div className="text-sm text-[#CDBE91]/70">Aggression</div>
+              </div>
+              <div>
+                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>60%</div>
+                <div className="text-sm text-[#CDBE91]/70">Vision Score</div>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Match Timeline */}
+        <div className="mb-8">
+          <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+            <TrendingUp className="w-6 h-6" />
+            Match Timeline
+          </h2>
+          <GlassCard className="p-8">
+            <div className="relative h-32">
+              {/* Timeline Line */}
+              <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-[#C89B3C]/20 via-[#C89B3C] to-[#0397AB]/20"></div>
+              
+              {/* Match Dots */}
+              <div className="relative h-full flex items-center justify-between px-4">
+                {Array.from({ length: 20 }).map((_, i) => {
+                  const isWin = Math.random() > 0.44; // 56% win rate
+                  return (
+                    <div
+                      key={i}
+                      className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 hover:scale-150 ${
+                        isWin ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'
+                      }`}
+                      title={isWin ? 'Victory' : 'Defeat'}
+                    ></div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-between text-sm text-[#CDBE91]/70">
+              <span>← Oldest</span>
+              <span>Recent →</span>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Fun Stats */}
+        <div className="mb-8">
+          <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+            <Flame className="w-6 h-6" />
+            Hidden Gems
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {funStats.map((stat, index) => (
+              <GlassCard 
+                key={index} 
+                className="p-6 text-center transform transition-all duration-300 hover:scale-105 hover:rotate-1"
+                glowColor={index % 2 === 0 ? 'gold' : 'blue'}
+              >
+                <div className="text-4xl mb-2">{stat.emoji}</div>
+                <div className="text-3xl text-[#C89B3C] mb-1" style={{ fontWeight: 800 }}>
+                  {stat.value}
+                </div>
+                <div className="text-sm text-[#CDBE91] mb-1 uppercase tracking-wide">
+                  {stat.title}
+                </div>
+                <div className="text-xs text-[#F0E6D2]/50">
+                  {stat.description}
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+
+        {/* Share CTA */}
+        <div className="text-center">
+          <GlassCard className="p-8 inline-block">
+            <h3 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider">
+              Share Your Story
+            </h3>
+            <p className="text-[#F0E6D2]/70 mb-6 max-w-md">
+              Show off your achievements and let your friends see how you dominated the Rift this season.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <HexButton variant="primary">Download Card</HexButton>
+              <HexButton variant="ghost">Share Link</HexButton>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  );
+}
