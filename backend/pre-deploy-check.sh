@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Load .env file if it exists
+if [ -f .env ]; then
+    echo "📄 Loading environment variables from .env..."
+    set -a
+    source .env
+    set +a
+    echo ""
+fi
+
 echo "=========================================="
 echo "🚀 Pre-Deployment Checklist"
 echo "=========================================="

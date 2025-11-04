@@ -119,7 +119,7 @@ export class RiftRewindStack extends cdk.Stack {
       INSIGHTS_TABLE: insightsTable.tableName,
       RAW_BUCKET: rawDataBucket.bucketName,
       PROCESSED_BUCKET: processedDataBucket.bucketName,
-      AWS_REGION: this.region,
+      // AWS_REGION is automatically set by Lambda runtime
     };
 
     // Ingestion Lambda (fetch data from Riot API)
@@ -177,8 +177,16 @@ export class RiftRewindStack extends cdk.Stack {
       environment: commonEnv,
     });
 
-    // Grant ingestion Lambda permission to invoke processing Lambda
-    processingLambda.grantInvoke(lambdaRole);
+    // Grant Lambda permission to invoke other Lambdas (for the pipeline)
+    lambdaRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['lambda:InvokeFunction'],
+        resources: [
+          `arn:aws:lambda:${this.region}:${this.account}:function:rift-rewind-processing`,
+          `arn:aws:lambda:${this.region}:${this.account}:function:rift-rewind-ai`,
+        ],
+      })
+    );
 
     // ========================================================================
     // API Gateway

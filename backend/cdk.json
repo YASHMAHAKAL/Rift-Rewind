@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node bin/backend.ts",
+  "app": "node bin/backend.js",
   "context": {
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,
