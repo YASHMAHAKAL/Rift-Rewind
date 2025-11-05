@@ -206,6 +206,17 @@ export class RiftRewindStack extends cdk.Stack {
     });
 
     const apiIntegration = new apigateway.LambdaIntegration(apiLambda);
+    const ingestionIntegration = new apigateway.LambdaIntegration(ingestionLambda);
+
+    // POST /ingest - Trigger data ingestion
+    const ingestResource = api.root.addResource('ingest', {
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: ['POST', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'Authorization'],
+      },
+    });
+    ingestResource.addMethod('POST', ingestionIntegration);
 
     // /player/{playerId}
     const playerResource = api.root.addResource('player');
