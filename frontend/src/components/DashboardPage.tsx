@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, AlertCircle } from 'lucide-react';
 import { HexButton } from './HexButton';
 import { GlassCard } from './GlassCard';
+import { ingestPlayerData } from '../services/api';
 
 interface DashboardPageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, data?: any) => void;
 }
 
 export function DashboardPage({ onNavigate }: DashboardPageProps) {
   const [summonerName, setSummonerName] = useState('');
   const [region, setRegion] = useState('NA');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const regions = [
     { code: 'NA', name: 'North America', flag: '🇺🇸' },
@@ -30,12 +32,32 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
     { name: 'Caps', region: 'EUW' },
   ];
 
-  const handleFetchData = () => {
+  const handleFetchData = async () => {
+    if (!summonerName.trim()) {
+      setError('Please enter a summoner name');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    setError(null);
+
+    try {
+      // Call the ingestion API
+      const response = await ingestPlayerData({
+        summonerName: summonerName.trim(),
+        region: `${region}1`, // Convert NA -> NA1, EUW -> EUW1, etc.
+        maxMatches: 10,
+      });
+
+      // Wait a moment for processing to start
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Navigate to player detail page with PUUID
+      onNavigate('player', { puuid: response.puuid, summonerName, region });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch player data');
       setLoading(false);
-      onNavigate('player');
-    }, 2000);
+    }
   };
 
   return (
@@ -126,6 +148,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                   variant="primary" 
                   onClick={handleFetchData}
                   className="w-full relative"
+                  disabled={loading}
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-3">
@@ -137,6 +160,16 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
                   )}
                 </HexButton>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mt-4 p-4 bg-red-900/20 border border-red-500/50 text-red-300 rounded">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    <span>{error}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Loading State */}
               {loading && (

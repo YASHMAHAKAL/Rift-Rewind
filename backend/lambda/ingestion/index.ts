@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { RiotClient } from '../../lib/riot-client';
+import { RiotClient } from './riot-client';
 
 /**
  * Ingestion Lambda - Fetch match data from Riot API
@@ -33,6 +33,19 @@ interface IngestionRequest {
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log('Ingestion Lambda invoked', { event });
 
+  // Handle OPTIONS preflight request
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+      body: '',
+    };
+  }
+
   try {
     // Parse request body
     const body: IngestionRequest = event.body 
@@ -46,11 +59,29 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     // Initialize Riot API client
     const riotClient = new RiotClient(RIOT_API_KEY, region);
 
-    // Step 1: Get player PUUID
-    const { puuid, summonerId } = await riotClient.getSummonerByName(summonerName);
+    // Step 1: Get player PUUID using Riot ID format (gameName#tagLine)
+    // If summonerName contains '#', split it; otherwise use summonerName as gameName and region as tagLine
+    let puuid: string;
+    let gameName: string;
+    let tagLine: string;
+    
+    if (summonerName.includes('#')) {
+      const [name, tag] = summonerName.split('#');
+      gameName = name;
+      tagLine = tag;
+      const result = await riotClient.getSummonerByRiotId(gameName, tagLine);
+      puuid = result.puuid;
+    } else {
+      // Fallback: try old API (may not work for all accounts)
+      gameName = summonerName;
+      tagLine = region.replace('1', ''); // NA1 -> NA
+      const result = await riotClient.getSummonerByRiotId(gameName, tagLine);
+      puuid = result.puuid;
+    }
+    
     const playerId = `${region}_${puuid.slice(0, 8)}`;
 
-    console.log('Player found:', { playerId, puuid, summonerId });
+    console.log('Player found:', { playerId, puuid, gameName, tagLine });
 
     // Step 2: Save player to DynamoDB
     await dynamoClient.send(
@@ -59,9 +90,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         Item: {
           playerId: { S: playerId },
           puuid: { S: puuid },
-          summonerName: { S: summonerName },
+          summonerName: { S: `${gameName}#${tagLine}` },
           region: { S: region },
-          summonerId: { S: summonerId },
           lastUpdated: { S: new Date().toISOString() },
         },
       })
@@ -134,10 +164,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
       body: JSON.stringify({
         message: 'Ingestion completed successfully',
-        playerId,
+        puuid,
         summonerName,
         region,
         matchesFetched: storedMatches.length,
@@ -152,6 +184,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
       body: JSON.stringify({
         error: 'Internal server error',
