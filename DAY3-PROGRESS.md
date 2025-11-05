@@ -153,7 +153,7 @@
 ### Environment Variables
 **Backend (.env):**
 ```
-RIOT_API_KEY=RGAPI-ce9b7c5c-06b4-4e7c-b99b-944fd060e167
+RIOT_API_KEY=RGAPI-your-key-here
 AWS_REGION=us-east-1
 AWS_ACCOUNT_ID=480731385241
 BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
@@ -252,7 +252,7 @@ Well within $100 AWS credits for hackathon!
 3. **Riot API Key Expiry**
    - ⚠️ Development key expires every 24 hours
    - Applied for personal API key (pending approval)
-   - Current key: `RGAPI-ce9b7c5c-06b4-4e7c-b99b-944fd060e167`
+   - Current key: `RGAPI-your-key-here` (regenerate from developer portal)
 
 4. **No OpenSearch**
    - Intentionally skipped (cost: $10-25/month)
