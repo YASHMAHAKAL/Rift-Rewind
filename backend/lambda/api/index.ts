@@ -70,15 +70,19 @@ export const handler = async (
  */
 async function getPlayer(playerId: string): Promise<APIGatewayProxyResult> {
   try {
-    // Query player from DynamoDB
+    // Query player from DynamoDB using GSI
     const result = await dynamoClient.send(
-      new GetCommand({
+      new QueryCommand({
         TableName: PLAYERS_TABLE,
-        Key: { puuid: playerId },
+        IndexName: 'puuid-index',
+        KeyConditionExpression: 'puuid = :puuid',
+        ExpressionAttributeValues: {
+          ':puuid': playerId, // playerId here is actually the puuid from the URL
+        },
       })
     );
 
-    if (!result.Item) {
+    if (!result.Items || result.Items.length === 0) {
       return {
         statusCode: 404,
         headers: corsHeaders(),
@@ -86,19 +90,19 @@ async function getPlayer(playerId: string): Promise<APIGatewayProxyResult> {
       };
     }
 
-    // Get match count
+    const player = result.Items[0];
+
+    // Get match count using the actual playerId from the player record
     const matchesResult = await dynamoClient.send(
       new QueryCommand({
         TableName: MATCHES_TABLE,
-        KeyConditionExpression: 'puuid = :puuid',
+        KeyConditionExpression: 'playerId = :playerId',
         ExpressionAttributeValues: {
-          ':puuid': playerId,
+          ':playerId': player.playerId,
         },
         Select: 'COUNT',
       })
     );
-
-    const player = result.Item;
     
     return {
       statusCode: 200,
@@ -122,13 +126,35 @@ async function getPlayer(playerId: string): Promise<APIGatewayProxyResult> {
  */
 async function getMatches(playerId: string): Promise<APIGatewayProxyResult> {
   try {
-    // Query matches from DynamoDB
+    // First get the player to get the actual playerId
+    const playerResult = await dynamoClient.send(
+      new QueryCommand({
+        TableName: PLAYERS_TABLE,
+        IndexName: 'puuid-index',
+        KeyConditionExpression: 'puuid = :puuid',
+        ExpressionAttributeValues: {
+          ':puuid': playerId, // playerId here is actually the puuid from the URL
+        },
+      })
+    );
+
+    if (!playerResult.Items || playerResult.Items.length === 0) {
+      return {
+        statusCode: 404,
+        headers: corsHeaders(),
+        body: JSON.stringify({ error: 'Player not found' }),
+      };
+    }
+
+    const player = playerResult.Items[0];
+
+    // Query matches from DynamoDB using the actual playerId
     const result = await dynamoClient.send(
       new QueryCommand({
         TableName: MATCHES_TABLE,
-        KeyConditionExpression: 'puuid = :puuid',
+        KeyConditionExpression: 'playerId = :playerId',
         ExpressionAttributeValues: {
-          ':puuid': playerId,
+          ':playerId': player.playerId,
         },
         ScanIndexForward: false, // Newest first
         Limit: 20,
@@ -187,13 +213,35 @@ async function getInsights(playerId: string): Promise<APIGatewayProxyResult> {
       };
     }
 
-    // Query insights from DynamoDB
+    // First get the player to get the actual playerId
+    const playerResult = await dynamoClient.send(
+      new QueryCommand({
+        TableName: PLAYERS_TABLE,
+        IndexName: 'puuid-index',
+        KeyConditionExpression: 'puuid = :puuid',
+        ExpressionAttributeValues: {
+          ':puuid': playerId, // playerId here is actually the puuid from the URL
+        },
+      })
+    );
+
+    if (!playerResult.Items || playerResult.Items.length === 0) {
+      return {
+        statusCode: 404,
+        headers: corsHeaders(),
+        body: JSON.stringify({ error: 'Player not found' }),
+      };
+    }
+
+    const player = playerResult.Items[0];
+
+    // Query insights from DynamoDB using the actual playerId
     const result = await dynamoClient.send(
       new QueryCommand({
         TableName: INSIGHTS_TABLE,
-        KeyConditionExpression: 'puuid = :puuid',
+        KeyConditionExpression: 'playerId = :playerId',
         ExpressionAttributeValues: {
-          ':puuid': playerId,
+          ':playerId': player.playerId,
         },
         ScanIndexForward: false, // Newest first
         Limit: 1,

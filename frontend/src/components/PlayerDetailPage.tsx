@@ -1,22 +1,138 @@
-import { Trophy, Target, Gamepad2, Award, Lightbulb, AlertTriangle, TrendingUp, Flame, Eye, Sword, Shield, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Trophy, Target, Award, Lightbulb, AlertTriangle, TrendingUp, Flame, Sword, Shield, Users, Loader2 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { StatCard } from './StatCard';
 import { ChampionCard } from './ChampionCard';
 import { PlayerRadarChart } from './PlayerRadarChart';
 import { HexButton } from './HexButton';
+import { getPlayerProfile, getPlayerMatches, getPlayerInsights, PlayerProfile, MatchesResponse, Insights } from '../services/api';
 
 interface PlayerDetailPageProps {
   onNavigate: (page: string) => void;
+  puuid: string;
+  summonerName: string;
+  region: string;
 }
 
-export function PlayerDetailPage({ onNavigate }: PlayerDetailPageProps) {
-  const topChampions = [
-    { name: 'Yasuo', games: 87, winRate: 58, mastery: 7 },
-    { name: 'Lee Sin', games: 64, winRate: 52, mastery: 6 },
-    { name: 'Zed', games: 52, winRate: 61, mastery: 7 },
+export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: PlayerDetailPageProps) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [playerData, setPlayerData] = useState<{
+    profile: PlayerProfile | null;
+    matches: MatchesResponse | null;
+    insights: Insights | null;
+  }>({
+    profile: null,
+    matches: null,
+    insights: null
+  });
+
+  useEffect(() => {
+    const fetchPlayerData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log('🔄 Fetching player data for:', { puuid, summonerName, region });
+
+        // Fetch player profile and matches
+        const [profile, matches] = await Promise.all([
+          getPlayerProfile(puuid),
+          getPlayerMatches(puuid)
+        ]);
+
+        console.log('✅ Got profile and matches:', { profile, matches });
+
+        setPlayerData(prev => ({ ...prev, profile, matches }));
+
+        // Try to fetch insights (may not be ready yet)
+        try {
+          const insights = await getPlayerInsights(puuid);
+          console.log('✅ Got insights:', insights);
+          setPlayerData(prev => ({ ...prev, insights }));
+        } catch (insightsError) {
+          console.log('⚠️ Insights not ready yet:', insightsError);
+          // This is okay - insights may still be processing
+        }
+
+      } catch (err) {
+        console.error('❌ Error fetching player data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load player data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (puuid) {
+      fetchPlayerData();
+    }
+  }, [puuid, summonerName, region]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#010A13] via-[#0A1428] to-[#1a0f2e] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-16 h-16 animate-spin text-[#C89B3C] mx-auto mb-4" />
+          <h2 className="text-2xl text-[#F0E6D2] mb-2">Loading Player Data</h2>
+          <p className="text-[#CDBE91]">Analyzing matches for {summonerName}...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#010A13] via-[#0A1428] to-[#1a0f2e] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl text-[#F0E6D2] mb-2">Error Loading Data</h2>
+          <p className="text-red-300 mb-6">{error}</p>
+          <HexButton variant="primary" onClick={() => onNavigate('dashboard')}>
+            Back to Search
+          </HexButton>
+        </div>
+      </div>
+    );
+  }
+
+  const { profile, matches, insights } = playerData;
+
+    // Calculate top champions from real match data
+  const topChampions = matches ? (() => {
+    const championStats: Record<string, { games: number; wins: number; id: number }> = {};
+    
+    matches.matches.forEach((match: any) => {
+      const champName = match.championName;
+      if (!championStats[champName]) {
+        championStats[champName] = { games: 0, wins: 0, id: match.championId };
+      }
+      championStats[champName].games++;
+      if (match.win) championStats[champName].wins++;
+    });
+
+    return Object.entries(championStats)
+      .map(([name, stats]) => ({
+        name,
+        games: stats.games,
+        winRate: Math.round((stats.wins / stats.games) * 100),
+        mastery: 7 // We don't have mastery data, so default to 7
+      }))
+      .sort((a, b) => b.games - a.games)
+      .slice(0, 3);
+  })() : [
+    { name: 'Loading...', games: 0, winRate: 0, mastery: 0 }
   ];
 
-  const coachingTips = [
+  // Use real coaching tips from insights if available
+  const coachingTips = insights?.coachingTips ? insights.coachingTips.map((tip: string, index: number) => ({
+    icon: index % 3 === 0 ? AlertTriangle : index % 3 === 1 ? Lightbulb : Target,
+    type: index % 3 === 0 ? 'warning' : index % 3 === 1 ? 'tip' : 'improvement',
+    title: tip,
+    problem: '', // We don't have problem/solution breakdown in our data
+    solution: '',
+    goal: '',
+    color: index % 3 === 0 ? 'text-orange-400' : index % 3 === 1 ? 'text-blue-400' : 'text-yellow-400'
+  })) : [
     {
       icon: AlertTriangle,
       type: 'warning',
@@ -46,14 +162,32 @@ export function PlayerDetailPage({ onNavigate }: PlayerDetailPageProps) {
     },
   ];
 
-  const funStats = [
+  // Calculate fun stats from real match data
+  const funStats = matches ? (() => {
+    const matchData = matches.matches;
+    const pentakills = matchData.filter((m: any) => m.kills >= 5).length;
+    const longestGame = Math.max(...matchData.map((m: any) => m.gameDuration));
+    const mostDeaths = Math.max(...matchData.map((m: any) => m.deaths));
+    const shortestWin = Math.min(...matchData.filter((m: any) => m.win).map((m: any) => m.gameDuration));
+    
+    const formatTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    return [
+      { emoji: '🔥', title: 'Pentakill-worthy', value: pentakills.toString(), description: `${pentakills} games with 5+ kills!` },
+      { emoji: '⏰', title: 'Longest Game', value: formatTime(longestGame), description: 'That was exhausting' },
+      { emoji: '💀', title: 'Most Deaths', value: mostDeaths.toString(), description: 'In a single game' },
+      { emoji: '⚡', title: 'Fastest Win', value: formatTime(shortestWin), description: 'Speed run champion' },
+      { emoji: '🎯', title: 'Avg KDA', value: matches.aggregateStats.avgKDA, description: 'Overall performance' },
+      { emoji: '🌟', title: 'Win Rate', value: `${Math.round(matches.aggregateStats.winRate)}%`, description: 'Climb potential' },
+    ];
+  })() : [
     { emoji: '🔥', title: 'Pentakill Count', value: '3', description: 'You\'re a monster!' },
     { emoji: '😅', title: 'Flash Fails', value: '47', description: 'We\'ve all been there' },
-    { emoji: '⏰', title: 'Longest Game', value: '68:42', description: 'That was exhausting' },
-    { emoji: '💀', title: 'Most Deaths', value: '18', description: 'In a single game' },
-    { emoji: '🎯', title: 'Baron Steals', value: '2', description: 'Calculated!' },
-    { emoji: '⚡', title: 'Fastest Win', value: '14:23', description: 'Speed run champion' },
-  ];
+    ];
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#010A13] via-[#0A1428] to-[#1a0f2e]">
@@ -91,13 +225,15 @@ export function PlayerDetailPage({ onNavigate }: PlayerDetailPageProps) {
               {/* Player Info */}
               <div>
                 <h1 className="text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#C89B3C] to-[#CDBE91] mb-2" style={{ fontWeight: 800 }}>
-                  FAKER
+                  {profile?.summonerName || summonerName}
                 </h1>
                 <div className="flex items-center gap-4">
                   <span className="px-3 py-1 bg-[#C89B3C]/20 border border-[#C89B3C]/50 text-[#C89B3C] text-sm uppercase tracking-wider">
-                    KR
+                    {region}
                   </span>
-                  <span className="text-[#F0E6D2]/70">Season 2024</span>
+                  <span className="text-[#F0E6D2]/70">
+                    {matches ? `${matches.aggregateStats.totalMatches} games analyzed` : 'Loading...'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -218,16 +354,22 @@ export function PlayerDetailPage({ onNavigate }: PlayerDetailPageProps) {
             <PlayerRadarChart />
             <div className="mt-6 grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>85%</div>
-                <div className="text-sm text-[#CDBE91]/70">Objective Focus</div>
-              </div>
-              <div>
-                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>75%</div>
+                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>
+                  {insights?.playstyleInsights?.aggression ? Math.round(insights.playstyleInsights.aggression * 100) + '%' : '85%'}
+                </div>
                 <div className="text-sm text-[#CDBE91]/70">Aggression</div>
               </div>
               <div>
-                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>60%</div>
-                <div className="text-sm text-[#CDBE91]/70">Vision Score</div>
+                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>
+                  {insights?.playstyleInsights?.vision ? Math.round(insights.playstyleInsights.vision * 100) + '%' : '72%'}
+                </div>
+                <div className="text-sm text-[#CDBE91]/70">Vision Control</div>
+              </div>
+              <div>
+                <div className="text-2xl text-[#C89B3C]" style={{ fontWeight: 800 }}>
+                  {insights?.playstyleInsights?.teamfighting ? Math.round(insights.playstyleInsights.teamfighting * 100) + '%' : '91%'}
+                </div>
+                <div className="text-sm text-[#CDBE91]/70">Teamfighting</div>
               </div>
             </div>
           </GlassCard>

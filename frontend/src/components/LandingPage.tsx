@@ -3,7 +3,7 @@ import { HexButton } from './HexButton';
 import { GlassCard } from './GlassCard';
 
 interface LandingPageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, data?: any) => void;
 }
 
 export function LandingPage({ onNavigate }: LandingPageProps) {
@@ -63,7 +63,11 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             <HexButton variant="primary" onClick={() => onNavigate('dashboard')}>
               Open Your Yearbook
             </HexButton>
-            <HexButton variant="ghost" onClick={() => onNavigate('player')}>
+            <HexButton variant="ghost" onClick={() => onNavigate('player', { 
+              puuid: 'demo-puuid', 
+              summonerName: 'Demo Player', 
+              region: 'NA' 
+            })}>
               Try Demo
             </HexButton>
           </div>
