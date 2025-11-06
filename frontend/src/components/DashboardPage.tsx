@@ -42,9 +42,21 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
     setError(null);
 
     try {
+      // Format summoner name properly for Riot API
+      // If it doesn't contain '#', add the region tag
+      let formattedSummonerName = summonerName.trim();
+      if (!formattedSummonerName.includes('#')) {
+        // Convert region to tag format (NA1 -> NA1, EUW1 -> EUW1, etc.)
+        const regionTag = region === 'NA' ? 'NA1' : 
+                         region === 'EUW' ? 'EUW1' : 
+                         region === 'KR' ? 'KR' : 
+                         `${region}1`;
+        formattedSummonerName = `${formattedSummonerName}#${regionTag}`;
+      }
+
       // Call the ingestion API
       const response = await ingestPlayerData({
-        summonerName: summonerName.trim(),
+        summonerName: formattedSummonerName,
         region: `${region}1`, // Convert NA -> NA1, EUW -> EUW1, etc.
         maxMatches: 10,
       });

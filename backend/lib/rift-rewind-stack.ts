@@ -281,5 +281,33 @@ export class RiftRewindStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'FrontendBucketName', {
       value: frontendBucket.bucketName,
     });
+
+    // Write API endpoint to a file for frontend to consume
+    const fs = require('fs');
+    
+    // Create endpoints.json file for frontend
+    const endpointsConfig = {
+      apiEndpoint: api.url,
+      cloudFrontUrl: `https://${distribution.distributionDomainName}`,
+      region: this.region,
+      accountId: this.account,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Write to both shared directory (for reference) and frontend public directory (for Vite)
+    const sharedPath = path.join(__dirname, '../../shared/endpoints.json');
+    const frontendPath = path.join(__dirname, '../../frontend/public/endpoints.json');
+    
+    // Ensure directories exist
+    [path.dirname(sharedPath), path.dirname(frontendPath)].forEach(dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    });
+    
+    const configContent = JSON.stringify(endpointsConfig, null, 2);
+    fs.writeFileSync(sharedPath, configContent);
+    fs.writeFileSync(frontendPath, configContent);
+    console.log(`✅ API endpoints written to ${sharedPath} and ${frontendPath}`);
   }
 }

@@ -1,0 +1,7 @@
+{
+  "apiEndpoint": "https://${Token[TOKEN.149]}.execute-api.us-east-1.${Token[AWS.URLSuffix.6]}/${Token[TOKEN.169]}/",
+  "cloudFrontUrl": "https://${Token[TOKEN.260]}",
+  "region": "us-east-1",
+  "accountId": "480731385241",
+  "timestamp": "2025-11-06T17:05:58.082Z"
+}

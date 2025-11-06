@@ -3,7 +3,26 @@
  * Handles all communication with the backend API
  */
 
-const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000';
+// Function to get API base URL from endpoints.json or fallback to environment
+async function getApiBaseUrl(): Promise<string> {
+  try {
+    // Try to fetch the endpoints file from public directory
+    const response = await fetch('/endpoints.json');
+    if (response.ok) {
+      const endpoints = await response.json();
+      // Remove trailing slash to avoid double slashes
+      const apiUrl = endpoints.apiEndpoint.replace(/\/+$/, '');
+      console.log('✅ Loaded API endpoint from endpoints.json:', apiUrl);
+      return apiUrl;
+    }
+  } catch (error) {
+    console.warn('Could not load endpoints.json, falling back to environment variable');
+  }
+  
+  // Fallback to environment variable or localhost for development
+  const fallbackUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000';
+  return fallbackUrl.replace(/\/+$/, '');
+}
 
 interface PlayerProfile {
   puuid: string;
@@ -77,7 +96,8 @@ interface IngestionRequest {
  * Fetch player profile
  */
 export async function getPlayerProfile(puuid: string): Promise<PlayerProfile> {
-  const response = await fetch(`${API_BASE_URL}/player/${puuid}`);
+  const baseUrl = await getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/player/${puuid}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch player: ${response.statusText}`);
@@ -90,7 +110,8 @@ export async function getPlayerProfile(puuid: string): Promise<PlayerProfile> {
  * Fetch player match history
  */
 export async function getPlayerMatches(puuid: string): Promise<MatchesResponse> {
-  const response = await fetch(`${API_BASE_URL}/player/${puuid}/matches`);
+  const baseUrl = await getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/player/${puuid}/matches`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch matches: ${response.statusText}`);
@@ -103,7 +124,8 @@ export async function getPlayerMatches(puuid: string): Promise<MatchesResponse> 
  * Fetch player insights
  */
 export async function getPlayerInsights(puuid: string): Promise<Insights> {
-  const response = await fetch(`${API_BASE_URL}/player/${puuid}/insights`);
+  const baseUrl = await getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/player/${puuid}/insights`);
   
   if (!response.ok) {
     if (response.status === 404) {
@@ -120,7 +142,12 @@ export async function getPlayerInsights(puuid: string): Promise<Insights> {
  * This calls the ingestion Lambda via API Gateway
  */
 export async function ingestPlayerData(request: IngestionRequest): Promise<{ message: string; puuid: string }> {
-  const response = await fetch(`${API_BASE_URL}/ingest`, {
+  const baseUrl = await getApiBaseUrl();
+  
+  console.log('🔄 Making API call to:', `${baseUrl}/ingest`);
+  console.log('📤 Request payload:', JSON.stringify(request));
+  
+  const response = await fetch(`${baseUrl}/ingest`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -128,12 +155,26 @@ export async function ingestPlayerData(request: IngestionRequest): Promise<{ mes
     body: JSON.stringify(request),
   });
   
+  console.log('📥 Response status:', response.status, response.statusText);
+  
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || 'Failed to ingest player data');
+    let errorText;
+    try {
+      errorText = await response.text();
+      console.log('❌ Error response body:', errorText);
+      
+      // Try to parse as JSON first
+      const errorData = JSON.parse(errorText);
+      throw new Error(errorData.error || errorData.message || 'Failed to ingest player data');
+    } catch (jsonError) {
+      // If not JSON, use the raw text
+      throw new Error(errorText || `HTTP ${response.status}: ${response.statusText}`);
+    }
   }
   
-  return response.json();
+  const result = await response.json();
+  console.log('✅ Success response:', result);
+  return result;
 }
 
 /**
@@ -158,7 +199,8 @@ export async function getDemoData(): Promise<{
  */
 export async function checkAPIHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const baseUrl = await getApiBaseUrl();
+    const response = await fetch(`${baseUrl}/health`);
     return response.ok;
   } catch {
     return false;
