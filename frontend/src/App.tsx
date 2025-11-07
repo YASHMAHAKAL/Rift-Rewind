@@ -20,6 +20,7 @@ export default function App() {
       {currentPage === 'dashboard' && <DashboardPage onNavigate={handleNavigate} />}
       {currentPage === 'player' && playerData && (
         <PlayerDetailPage 
+          key={playerData.puuid} 
           onNavigate={handleNavigate} 
           puuid={playerData.puuid}
           summonerName={playerData.summonerName}

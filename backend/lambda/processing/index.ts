@@ -57,7 +57,13 @@ export const handler = async (event: ProcessingEvent): Promise<void> => {
     }
 
     // 3. Compute statistics
+    // CRITICAL: playerId MUST match the format used in ingestion Lambda
+    // Ingestion uses: region_puuid.slice(0,8)
+    // Example: "KR1_osKuSKIM" not "KR1_Faker"
+    const playerId = `${region}_${puuid.slice(0, 8)}`;
+    
     const stats = {
+      playerId, // REQUIRED: DynamoDB partition key - MUST match ingestion format!
       matchId,
       puuid,
       championName: participant.championName,

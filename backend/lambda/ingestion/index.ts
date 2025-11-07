@@ -113,7 +113,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         const matchData = await riotClient.getMatch(matchId);
 
         // Store raw match data in S3
-        const key = `${playerId}/${matchId}.json`;
+        const key = `${region}/${puuid}/${matchId}.json`;
         await s3Client.send(
           new PutObjectCommand({
             Bucket: RAW_BUCKET,
@@ -138,24 +138,28 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     console.log(`Successfully stored ${storedMatches.length} matches`);
 
-    // Step 5: Trigger processing Lambda
+    // Step 5: Trigger processing Lambda for each match
     if (storedMatches.length > 0) {
-      try {
-        await lambdaClient.send(
-          new InvokeCommand({
-            FunctionName: PROCESSING_LAMBDA,
-            InvocationType: 'Event', // Async invocation
-            Payload: JSON.stringify({
-              playerId,
-              region,
-              matchIds: storedMatches,
-            }),
-          })
-        );
-        console.log('Processing Lambda triggered');
-      } catch (error) {
-        console.error('Failed to trigger processing Lambda:', error);
-        // Non-fatal - matches are stored, can be reprocessed later
+      console.log(`Triggering processing for ${storedMatches.length} matches`);
+      
+      for (const matchId of storedMatches) {
+        try {
+          await lambdaClient.send(
+            new InvokeCommand({
+              FunctionName: PROCESSING_LAMBDA,
+              InvocationType: 'Event', // Async invocation
+              Payload: JSON.stringify({
+                puuid,
+                matchId,
+                region,
+              }),
+            })
+          );
+          console.log(`Processing Lambda triggered for match ${matchId}`);
+        } catch (error) {
+          console.error(`Failed to trigger processing Lambda for match ${matchId}:`, error);
+          // Non-fatal - match is stored in S3, can be reprocessed later
+        }
       }
     }
 
