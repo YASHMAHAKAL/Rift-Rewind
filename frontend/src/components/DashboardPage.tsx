@@ -58,7 +58,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
       const response = await ingestPlayerData({
         summonerName: formattedSummonerName,
         region: `${region}1`, // Convert NA -> NA1, EUW -> EUW1, etc.
-        maxMatches: 10,
+        maxMatches: 50, // Fetch up to 50 recent matches
       });
 
       // Wait a moment for processing to start
