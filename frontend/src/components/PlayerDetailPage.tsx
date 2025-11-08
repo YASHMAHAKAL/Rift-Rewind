@@ -344,6 +344,36 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
           </div>
         </div>
 
+        {/* Roast Mode Section */}
+        {insights?.roastMode && (
+          <div className="mb-8">
+            <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
+              <Flame className="w-6 h-6" />
+              Roast Mode 🔥
+            </h2>
+            <GlassCard className="p-8 relative overflow-hidden" glowColor="red">
+              {/* Fire Background Effect */}
+              <div className="absolute inset-0 opacity-10 bg-gradient-to-r from-orange-900 via-red-900 to-orange-900 animate-pulse"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-[0_0_20px_rgba(239,68,68,0.6)]">
+                    <Flame className="w-8 h-8 text-white animate-pulse" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[#F0E6D2] text-xl leading-relaxed italic">
+                      "{insights.roastMode}"
+                    </p>
+                    <p className="text-[#CDBE91]/60 text-sm mt-3">
+                      💀 AI-generated roast • All in good fun!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          </div>
+        )}
+
         {/* AI Coaching Tips */}
         <div className="mb-8">
           <h2 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider flex items-center gap-3">
