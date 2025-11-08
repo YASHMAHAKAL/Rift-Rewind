@@ -451,20 +451,21 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
               {/* Timeline Line */}
               <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-[#C89B3C]/20 via-[#C89B3C] to-[#0397AB]/20"></div>
               
-              {/* Match Dots */}
+              {/* Match Dots - Now using REAL match data! */}
               <div className="relative h-full flex items-center justify-between px-4">
-                {Array.from({ length: 20 }).map((_, i) => {
-                  const isWin = Math.random() > 0.44; // 56% win rate
-                  return (
+                {matches && matches.matches.length > 0 ? (
+                  matches.matches.slice(0, 20).reverse().map((match, i) => (
                     <div
-                      key={i}
+                      key={match.matchId}
                       className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 hover:scale-150 ${
-                        isWin ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'
+                        match.win ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'
                       }`}
-                      title={isWin ? 'Victory' : 'Defeat'}
+                      title={`${match.win ? 'Victory' : 'Defeat'} - ${match.championName} (${match.kills}/${match.deaths}/${match.assists})`}
                     ></div>
-                  );
-                })}
+                  ))
+                ) : (
+                  <div className="text-[#CDBE91]/50 text-center w-full">Loading matches...</div>
+                )}
               </div>
             </div>
             

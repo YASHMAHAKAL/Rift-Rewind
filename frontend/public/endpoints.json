@@ -1,6 +1,4 @@
 {
   "apiEndpoint": "https://r3jqyy7wo0.execute-api.us-east-1.amazonaws.com/prod/",
-  "cloudFrontUrl": "https://d3ig6wavfk9x5j.cloudfront.net",
-  "region": "us-east-1",
-  "accountId": "480731385241"
+  "cloudFrontUrl": "https://d3ig6wavfk9x5j.cloudfront.net"
 }
