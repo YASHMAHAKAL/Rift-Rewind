@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Trophy, Target, Award, Lightbulb, AlertTriangle, TrendingUp, Flame, Sword, Shield, Users, Loader2 } from 'lucide-react';
+import { Trophy, Target, Award, Lightbulb, AlertTriangle, TrendingUp, Flame, Sword, Shield, Users, Loader2, Download, Share2, Check } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { GlassCard } from './GlassCard';
 import { StatCard } from './StatCard';
 import { ChampionCard } from './ChampionCard';
 import { PlayerRadarChart } from './PlayerRadarChart';
 import { HexButton } from './HexButton';
+import { ShareCard } from './ShareCard';
 import { getPlayerProfile, getPlayerMatches, getPlayerInsights, PlayerProfile, MatchesResponse, Insights } from '../services/api';
 
 export function PlayerDetailPage() {
@@ -18,6 +21,9 @@ export function PlayerDetailPage() {
   const region = searchParams.get('region') || 'Unknown';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
   const [playerData, setPlayerData] = useState<{
     profile: PlayerProfile | null;
     matches: MatchesResponse | null;
@@ -74,6 +80,70 @@ export function PlayerDetailPage() {
       fetchPlayerData();
     }
   }, [puuid, summonerName, region]);
+
+  // Download share card as PDF
+  const handleDownloadCard = async () => {
+    if (!shareCardRef.current) return;
+    
+    setDownloading(true);
+    try {
+      // Capture the card as canvas
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: '#010A13',
+        scale: 2, // Higher quality
+        logging: false,
+      });
+      
+      // Convert canvas to image
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      
+      // Download PDF
+      pdf.save(`rift-rewind-${summonerName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`);
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+      alert('Failed to download PDF report. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // Copy share link to clipboard
+  const handleShareLink = async () => {
+    const shareUrl = window.location.href;
+    
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        alert('Failed to copy link. Please copy manually: ' + shareUrl);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
 
   if (loading) {
     return (
@@ -470,22 +540,58 @@ export function PlayerDetailPage() {
               </GlassCard>
             ))}
           </div>
-        </div>
 
-        {/* Share CTA */}
-        <div className="text-center">
-          <GlassCard className="p-8 inline-block">
-            <h3 className="text-2xl text-[#CDBE91] mb-4 uppercase tracking-wider">
-              Share Your Story
-            </h3>
-            <p className="text-[#F0E6D2]/70 mb-6 max-w-md">
-              Show off your achievements and let your friends see how you dominated the Rift this season.
-            </p>
-            <div className="flex gap-4 justify-center">
-              <HexButton variant="primary">Download Card</HexButton>
-              <HexButton variant="ghost">Share Link</HexButton>
-            </div>
-          </GlassCard>
+          {/* Download & Share Buttons */}
+          <div className="flex gap-4 justify-center mt-8">
+            <HexButton 
+              variant="primary" 
+              onClick={handleDownloadCard}
+              disabled={downloading}
+            >
+              {downloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                  Generating PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 inline mr-2" />
+                  Download PDF Report
+                </>
+              )}
+            </HexButton>
+            <HexButton 
+              variant="ghost"
+              onClick={handleShareLink}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 inline mr-2" />
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 inline mr-2" />
+                  Share Link
+                </>
+              )}
+            </HexButton>
+          </div>
+        </div>
+      </div>
+
+      {/* Hidden ShareCard for screenshot capture - hidden but renderable */}
+      <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', pointerEvents: 'none' }}>
+        <div ref={shareCardRef}>
+          <ShareCard
+            summonerName={summonerName}
+            region={region}
+            totalMatches={matches?.aggregateStats.totalMatches || 0}
+            winRate={matches ? Math.round(matches.aggregateStats.winRate) : 0}
+            avgKDA={matches?.aggregateStats.avgKDA || '0.0'}
+            topChampions={topChampions}
+            heroSummary={insights?.heroSummary}
+          />
         </div>
       </div>
     </div>
