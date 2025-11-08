@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Trophy, Target, Award, Lightbulb, AlertTriangle, TrendingUp, Flame, Sword, Shield, Users, Loader2 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { StatCard } from './StatCard';
@@ -7,14 +8,14 @@ import { PlayerRadarChart } from './PlayerRadarChart';
 import { HexButton } from './HexButton';
 import { getPlayerProfile, getPlayerMatches, getPlayerInsights, PlayerProfile, MatchesResponse, Insights } from '../services/api';
 
-interface PlayerDetailPageProps {
-  onNavigate: (page: string) => void;
-  puuid: string;
-  summonerName: string;
-  region: string;
-}
-
-export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: PlayerDetailPageProps) {
+export function PlayerDetailPage() {
+  const { puuid } = useParams<{ puuid: string }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get summoner name and region from URL params (if provided)
+  const summonerName = searchParams.get('name') || 'Player';
+  const region = searchParams.get('region') || 'Unknown';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [playerData, setPlayerData] = useState<{
@@ -29,6 +30,12 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
 
   useEffect(() => {
     const fetchPlayerData = async () => {
+      if (!puuid) {
+        setError('No player ID provided');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -87,7 +94,7 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
           <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-2xl text-[#F0E6D2] mb-2">Error Loading Data</h2>
           <p className="text-red-300 mb-6">{error}</p>
-          <HexButton variant="primary" onClick={() => onNavigate('dashboard')}>
+          <HexButton variant="primary" onClick={() => navigate('/dashboard')}>
             Back to Search
           </HexButton>
         </div>
@@ -121,45 +128,6 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
       .slice(0, 3);
   })() : [
     { name: 'Loading...', games: 0, winRate: 0, mastery: 0 }
-  ];
-
-  // Use real coaching tips from insights if available
-  const coachingTips = insights?.coachingTips ? insights.coachingTips.map((tip: string, index: number) => ({
-    icon: index % 3 === 0 ? AlertTriangle : index % 3 === 1 ? Lightbulb : Target,
-    type: index % 3 === 0 ? 'warning' : index % 3 === 1 ? 'tip' : 'improvement',
-    title: tip,
-    problem: '', // We don't have problem/solution breakdown in our data
-    solution: '',
-    goal: '',
-    color: index % 3 === 0 ? 'text-orange-400' : index % 3 === 1 ? 'text-blue-400' : 'text-yellow-400'
-  })) : [
-    {
-      icon: AlertTriangle,
-      type: 'warning',
-      title: 'Vision Control Needs Work',
-      problem: 'You average only 0.8 control wards per game',
-      solution: 'Buy at least 2 control wards per back after 15 minutes',
-      goal: 'Target: 1.5+ control wards per game',
-      color: 'text-orange-400'
-    },
-    {
-      icon: Lightbulb,
-      type: 'tip',
-      title: 'Excellent Objective Control',
-      problem: 'Your team secures 68% of dragons when you\'re alive',
-      solution: 'Keep prioritizing dragon spawns and setup vision 1 minute before',
-      goal: 'Maintain this strength!',
-      color: 'text-blue-400'
-    },
-    {
-      icon: Target,
-      type: 'improvement',
-      title: 'CS at 10 Minutes',
-      problem: 'Averaging 72 CS at 10min (70th percentile)',
-      solution: 'Practice last-hitting drills and wave management',
-      goal: 'Target: 85+ CS at 10min for next tier',
-      color: 'text-yellow-400'
-    },
   ];
 
   // Calculate fun stats from real match data
@@ -200,7 +168,7 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Back Button */}
         <button 
-          onClick={() => onNavigate('dashboard')}
+          onClick={() => navigate('/dashboard')}
           className="mb-6 text-[#CDBE91] hover:text-[#C89B3C] transition-colors flex items-center gap-2"
         >
           ← Back to Search
@@ -351,7 +319,7 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
               <Flame className="w-6 h-6" />
               Roast Mode 🔥
             </h2>
-            <GlassCard className="p-8 relative overflow-hidden" glowColor="red">
+            <GlassCard className="p-8 relative overflow-hidden" glowColor="gold">
               {/* Fire Background Effect */}
               <div className="absolute inset-0 opacity-10 bg-gradient-to-r from-orange-900 via-red-900 to-orange-900 animate-pulse"></div>
               
@@ -454,7 +422,7 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
               {/* Match Dots - Now using REAL match data! */}
               <div className="relative h-full flex items-center justify-between px-4">
                 {matches && matches.matches.length > 0 ? (
-                  matches.matches.slice(0, 20).reverse().map((match, i) => (
+                  matches.matches.slice(0, 20).reverse().map((match) => (
                     <div
                       key={match.matchId}
                       className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 hover:scale-150 ${

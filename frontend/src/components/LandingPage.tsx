@@ -1,12 +1,10 @@
 import { Sparkles, TrendingUp, Trophy } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { HexButton } from './HexButton';
 import { GlassCard } from './GlassCard';
 
-interface LandingPageProps {
-  onNavigate: (page: string, data?: any) => void;
-}
-
-export function LandingPage({ onNavigate }: LandingPageProps) {
+export function LandingPage() {
+  const navigate = useNavigate();
   const features = [
     {
       icon: Sparkles,
@@ -60,14 +58,10 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
 
           {/* CTA Buttons */}
           <div className="flex gap-6 justify-center mb-16">
-            <HexButton variant="primary" onClick={() => onNavigate('dashboard')}>
+            <HexButton variant="primary" onClick={() => navigate('/dashboard')}>
               Open Your Yearbook
             </HexButton>
-            <HexButton variant="ghost" onClick={() => onNavigate('player', { 
-              puuid: 'demo-puuid', 
-              summonerName: 'Demo Player', 
-              region: 'NA' 
-            })}>
+            <HexButton variant="ghost" onClick={() => navigate('/player/demo')}>
               Try Demo
             </HexButton>
           </div>

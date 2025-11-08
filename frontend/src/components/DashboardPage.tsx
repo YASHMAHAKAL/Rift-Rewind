@@ -1,14 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, AlertCircle } from 'lucide-react';
 import { HexButton } from './HexButton';
 import { GlassCard } from './GlassCard';
 import { ingestPlayerData } from '../services/api';
 
-interface DashboardPageProps {
-  onNavigate: (page: string, data?: any) => void;
-}
-
-export function DashboardPage({ onNavigate }: DashboardPageProps) {
+export function DashboardPage() {
+  const navigate = useNavigate();
   const [summonerName, setSummonerName] = useState('');
   const [region, setRegion] = useState('NA');
   const [loading, setLoading] = useState(false);
@@ -65,7 +63,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Navigate to player detail page with PUUID
-      onNavigate('player', { puuid: response.puuid, summonerName, region });
+      navigate(`/player/${response.puuid}?name=${encodeURIComponent(summonerName)}&region=${region}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch player data');
       setLoading(false);
@@ -90,7 +88,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
         <div className="w-full max-w-2xl">
           {/* Back Button */}
           <button 
-            onClick={() => onNavigate('landing')}
+            onClick={() => navigate('/')}
             className="mb-8 text-[#CDBE91] hover:text-[#C89B3C] transition-colors flex items-center gap-2"
           >
             ← Back to Home
