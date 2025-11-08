@@ -262,22 +262,38 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
           
           <div className="relative z-10">
             <h2 className="text-3xl text-[#CDBE91] mb-4 uppercase tracking-wider">Your Story</h2>
-            <p className="text-[#F0E6D2] text-lg leading-relaxed mb-6">
-              This season, you've proven yourself as a formidable force on the Rift. With <span className="text-[#C89B3C]">432 games played</span> and an impressive <span className="text-[#C89B3C]">56% win rate</span>, you've climbed the ranks with determination. Your mastery of mechanical champions shines through, particularly your signature <span className="text-[#C89B3C]">Yasuo</span> performances. While your aggressive playstyle dominates the mid-game, there's room to refine your early vision control and CS efficiency.
-            </p>
+            {insights?.heroSummary ? (
+              <p className="text-[#F0E6D2] text-lg leading-relaxed mb-6">
+                {insights.heroSummary}
+              </p>
+            ) : (
+              <p className="text-[#F0E6D2] text-lg leading-relaxed mb-6">
+                {matches ? `This season, you've played ${matches.aggregateStats.totalMatches} games with a ${Math.round(matches.aggregateStats.winRate)}% win rate. ` : 'Loading your story...'}
+                {topChampions.length > 0 && topChampions[0].name !== 'Loading...' 
+                  ? `Your signature champion is ${topChampions[0].name} with ${topChampions[0].games} games and a ${topChampions[0].winRate}% win rate. `
+                  : ''}
+                {matches ? `You average ${matches.aggregateStats.avgKDA} KDA and ${matches.aggregateStats.avgCSPerMin} CS/min across your matches.` : ''}
+              </p>
+            )}
 
             {/* Key Stats Row */}
             <div className="grid grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="text-4xl text-[#C89B3C] mb-1" style={{ fontWeight: 800 }}>432</div>
+                <div className="text-4xl text-[#C89B3C] mb-1" style={{ fontWeight: 800 }}>
+                  {matches?.aggregateStats.totalMatches || 0}
+                </div>
                 <div className="text-sm text-[#CDBE91]/70 uppercase tracking-wider">Total Games</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl text-green-400 mb-1" style={{ fontWeight: 800 }}>56%</div>
+                <div className="text-4xl text-green-400 mb-1" style={{ fontWeight: 800 }}>
+                  {matches ? `${Math.round(matches.aggregateStats.winRate)}%` : '0%'}
+                </div>
                 <div className="text-sm text-[#CDBE91]/70 uppercase tracking-wider">Win Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl text-[#0397AB] mb-1" style={{ fontWeight: 800 }}>3.2</div>
+                <div className="text-4xl text-[#0397AB] mb-1" style={{ fontWeight: 800 }}>
+                  {matches?.aggregateStats.avgKDA || '0.0'}
+                </div>
                 <div className="text-sm text-[#CDBE91]/70 uppercase tracking-wider">KDA</div>
               </div>
             </div>
@@ -291,9 +307,27 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
             Performance Metrics
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard icon={Sword} label="Avg Kills" value="8.4" subtext="+12% from last month" trend="up" />
-            <StatCard icon={Shield} label="Avg Deaths" value="5.2" subtext="-8% from last month" trend="down" />
-            <StatCard icon={Users} label="Avg Assists" value="9.1" subtext="+5% from last month" trend="up" />
+            <StatCard 
+              icon={Sword} 
+              label="Avg Kills" 
+              value={matches ? (matches.matches.reduce((sum, m) => sum + m.kills, 0) / matches.matches.length).toFixed(1) : '0.0'} 
+              subtext={`${matches?.aggregateStats.avgKDA || '0.0'} KDA`} 
+              trend="up" 
+            />
+            <StatCard 
+              icon={Shield} 
+              label="Avg Deaths" 
+              value={matches ? (matches.matches.reduce((sum, m) => sum + m.deaths, 0) / matches.matches.length).toFixed(1) : '0.0'} 
+              subtext="Per game" 
+              trend="down" 
+            />
+            <StatCard 
+              icon={Users} 
+              label="Avg Assists" 
+              value={matches ? (matches.matches.reduce((sum, m) => sum + m.assists, 0) / matches.matches.length).toFixed(1) : '0.0'} 
+              subtext={`${matches?.aggregateStats.avgCSPerMin || '0.0'} CS/min`} 
+              trend="up" 
+            />
           </div>
         </div>
 
@@ -316,32 +350,33 @@ export function PlayerDetailPage({ onNavigate, puuid, summonerName, region }: Pl
             <Lightbulb className="w-6 h-6" />
             AI Coaching Insights
           </h2>
-          <div className="space-y-4">
-            {coachingTips.map((tip, index) => (
-              <GlassCard key={index} className="p-6" glowColor={tip.type === 'tip' ? 'blue' : 'gold'}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 bg-gradient-to-br from-[#C89B3C] to-[#A67C2A] rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    <tip.icon className="w-6 h-6 text-[#010A13]" />
+          {insights?.coachingTips && insights.coachingTips.length > 0 ? (
+            <div className="space-y-4">
+              {insights.coachingTips.map((tip, index) => (
+                <GlassCard key={index} className="p-6" glowColor="blue">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#C89B3C] to-[#A67C2A] rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Lightbulb className="w-6 h-6 text-[#010A13]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[#F0E6D2] text-lg">{tip}</p>
+                    </div>
                   </div>
-                  
-                  <div className="flex-1">
-                    <h3 className={`text-xl ${tip.color} mb-2 uppercase tracking-wide`}>{tip.title}</h3>
-                    <p className="text-[#F0E6D2]/70 mb-2">{tip.problem}</p>
-                    <p className="text-[#CDBE91] mb-2">
-                      <strong>Solution:</strong> {tip.solution}
-                    </p>
-                    <p className="text-[#C89B3C] text-sm">
-                      <strong>Goal:</strong> {tip.goal}
-                    </p>
-                  </div>
-
-                  <button className="text-[#0397AB] hover:text-[#C89B3C] transition-colors text-sm underline whitespace-nowrap">
-                    View Evidence →
-                  </button>
-                </div>
-              </GlassCard>
-            ))}
-          </div>
+                </GlassCard>
+              ))}
+            </div>
+          ) : (
+            <GlassCard className="p-8" glowColor="gold">
+              <div className="text-center">
+                <Loader2 className="w-12 h-12 animate-spin text-[#C89B3C] mx-auto mb-4" />
+                <h3 className="text-xl text-[#CDBE91] mb-2">AI Analysis in Progress</h3>
+                <p className="text-[#F0E6D2]/70">
+                  Our AI is analyzing your matches to generate personalized coaching insights. 
+                  This usually takes 30-60 seconds. Refresh the page in a moment to see your tips!
+                </p>
+              </div>
+            </GlassCard>
+          )}
         </div>
 
         {/* Playstyle Radar Chart */}

@@ -42,6 +42,9 @@ export const handler = async (event: AIEvent): Promise<void> => {
     // 2. Get recent match history for context (last 10 matches)
     const recentMatches = await getRecentMatches(puuid);
     
+    // Extract playerId from recent matches (format: region_puuid.slice(0,8))
+    const playerId = `${region}_${puuid.slice(0, 8)}`;
+    
     // 3. Generate insights using Bedrock Claude
     const insights = await generateInsights(fragments, recentMatches);
     
@@ -50,6 +53,7 @@ export const handler = async (event: AIEvent): Promise<void> => {
       new PutCommand({
         TableName: INSIGHTS_TABLE,
         Item: {
+          playerId, // REQUIRED: DynamoDB partition key
           puuid,
           matchId,
           insightType: 'match-analysis',

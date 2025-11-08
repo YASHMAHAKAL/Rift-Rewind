@@ -183,6 +183,37 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   } catch (error) {
     console.error('Error in ingestion:', error);
     
+    // Parse the request body to get summoner info for error message
+    let summonerName = 'Unknown';
+    let region = 'Unknown';
+    try {
+      const requestBody = event.body ? JSON.parse(event.body) : {};
+      summonerName = requestBody.summonerName || 'Unknown';
+      region = requestBody.region || 'Unknown';
+    } catch (e) {
+      // Ignore parse errors
+    }
+    
+    // Check if it's a 404 error (player not found)
+    const isAxiosError = error && typeof error === 'object' && 'response' in error;
+    const status = isAxiosError && (error as any).response?.status;
+    
+    if (status === 404) {
+      return {
+        statusCode: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+        body: JSON.stringify({
+          error: 'Player not found',
+          message: `Summoner "${summonerName}" not found in region ${region}. Please check the spelling and try again. Make sure to use the format: Name#TAG (e.g., "Faker#KR" or "Doublelift#NA1")`,
+        }),
+      };
+    }
+    
     return {
       statusCode: 500,
       headers: {
