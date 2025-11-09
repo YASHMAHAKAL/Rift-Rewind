@@ -28,7 +28,7 @@ export function LandingPage() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
            style={{
-             backgroundImage: 'url(https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a7e2287b-ae42-4616-ac2b-9023e7710c47/denmedb-f8c8adf4-b1fb-4770-be69-d7494c8f821d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9hN2UyMjg3Yi1hZTQyLTQ2MTYtYWMyYi05MDIzZTc3MTBjNDcvZGVubWVkYi1mOGM4YWRmNC1iMWZiLTQ3NzAtYmU2OS1kNzQ5NGM4ZjgyMWQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.5xllHLEizuPfw8sans7g3XktVIDIurUgFeykmxWq-bI)',
+             backgroundImage: 'url(/hero-background.jpg)',
            }}>
       </div>
       
