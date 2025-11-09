@@ -1,13 +1,8 @@
-name: Deploy Backend
+name: Deploy Backend (Manual Only)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'backend/**'
-      - 'shared/**'
-      - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   deploy:

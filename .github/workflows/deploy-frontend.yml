@@ -1,13 +1,8 @@
-name: Deploy Frontend
+name: Deploy Frontend (Manual Only)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
-      - 'shared/**'
-      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   deploy:
