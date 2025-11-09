@@ -48,7 +48,7 @@ A visually stunning, AI-powered web application that transforms a League of Lege
 
 ### Architecture Diagram
 
-```
+`````
 ┌─────────────┐
 │ Riot Games  │
 │   API       │
