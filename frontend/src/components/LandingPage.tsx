@@ -25,8 +25,15 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#010A13] via-[#0A1428] to-[#1a0f2e] animate-gradient"></div>
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+           style={{
+             backgroundImage: 'url(https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a7e2287b-ae42-4616-ac2b-9023e7710c47/denmedb-f8c8adf4-b1fb-4770-be69-d7494c8f821d.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9hN2UyMjg3Yi1hZTQyLTQ2MTYtYWMyYi05MDIzZTc3MTBjNDcvZGVubWVkYi1mOGM4YWRmNC1iMWZiLTQ3NzAtYmU2OS1kNzQ5NGM4ZjgyMWQuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.5xllHLEizuPfw8sans7g3XktVIDIurUgFeykmxWq-bI)',
+           }}>
+      </div>
+      
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#010A13]/95 via-[#0A1428]/90 to-[#1a0f2e]/95"></div>
       
       {/* Hexagonal Grid Pattern Overlay */}
       <div className="absolute inset-0 opacity-10" style={{
@@ -44,15 +51,24 @@ export function LandingPage() {
           {/* Logo/Title */}
           <div className="mb-8 inline-block">
             <div className="relative">
-              <h1 className="text-8xl tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#C89B3C] to-[#CDBE91] drop-shadow-[0_0_30px_rgba(200,155,60,0.5)]" style={{ fontWeight: 800 }}>
+              <h1 className="text-8xl tracking-widest uppercase text-white" style={{ 
+                fontWeight: 800,
+                textShadow: '0 0 40px rgba(200,155,60,0.8), 0 0 80px rgba(200,155,60,0.6), 0 4px 20px rgba(0,0,0,0.9), 0 8px 40px rgba(0,0,0,0.8)',
+                WebkitTextStroke: '2px rgba(255,255,255,0.3)',
+              }}>
                 RIFT REWIND
               </h1>
-              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C89B3C] to-transparent"></div>
+              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C89B3C] to-transparent shadow-[0_0_20px_rgba(200,155,60,0.8)]"></div>
             </div>
           </div>
 
-          <p className="text-3xl text-[#F0E6D2] mb-4 tracking-wide">Your Season, Your Story</p>
-          <p className="text-lg text-[#CDBE91]/70 mb-12 max-w-2xl mx-auto">
+          <p className="text-3xl text-[#F0E6D2] mb-4 tracking-wide" style={{
+            textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 4px 40px rgba(0,0,0,0.8), 0 0 30px rgba(240,230,210,0.3)'
+          }}>Your Season, Your Story</p>
+          <p className="text-lg text-[#CDBE91] mb-12 max-w-2xl mx-auto" style={{
+            textShadow: '0 2px 15px rgba(0,0,0,0.95), 0 4px 30px rgba(0,0,0,0.8)',
+            fontWeight: 500
+          }}>
             Dive deep into your League of Legends journey. Uncover insights, relive epic moments, and level up your gameplay.
           </p>
 
@@ -61,7 +77,7 @@ export function LandingPage() {
             <HexButton variant="primary" onClick={() => navigate('/dashboard')}>
               Open Your Yearbook
             </HexButton>
-            <HexButton variant="ghost" onClick={() => navigate('/player/demo')}>
+            <HexButton variant="primary" onClick={() => navigate('/player/demo')}>
               Try Demo
             </HexButton>
           </div>
@@ -71,11 +87,15 @@ export function LandingPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#010A13] via-transparent to-transparent z-10"></div>
             <div className="relative w-full h-full flex items-center justify-center">
               {/* Hexagon Frame */}
-              <div className="absolute w-80 h-80 border-4 border-[#C89B3C]/30 animate-spin-slow" style={{
-                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+              <div className="absolute w-80 h-80 animate-spin-slow" style={{
+                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                border: '6px solid #00ff00',
+                filter: 'drop-shadow(0 0 20px #00ff00) drop-shadow(0 0 40px #00ff00)'
               }}></div>
-              <div className="absolute w-64 h-64 border-2 border-[#0397AB]/30 animate-spin-reverse" style={{
-                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+              <div className="absolute w-64 h-64 animate-spin-reverse" style={{
+                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                border: '5px solid #ff00ff',
+                filter: 'drop-shadow(0 0 20px #ff00ff) drop-shadow(0 0 40px #ff00ff)'
               }}></div>
               {/* Center Icon */}
               <div className="relative w-32 h-32 bg-gradient-to-br from-[#C89B3C] to-[#0397AB] rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(200,155,60,0.6)]">

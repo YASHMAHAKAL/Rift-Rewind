@@ -40,22 +40,23 @@ export function DashboardPage() {
     setError(null);
 
     try {
-      // Format summoner name properly for Riot API
-      // If it doesn't contain '#', add the region tag
-      let formattedSummonerName = summonerName.trim();
-      if (!formattedSummonerName.includes('#')) {
-        // Convert region to tag format (NA1 -> NA1, EUW1 -> EUW1, etc.)
-        const regionTag = region === 'NA' ? 'NA1' : 
-                         region === 'EUW' ? 'EUW1' : 
-                         region === 'KR' ? 'KR' : 
-                         `${region}1`;
-        formattedSummonerName = `${formattedSummonerName}#${regionTag}`;
-      }
+      // Convert region code to Riot API format
+      const regionMap: Record<string, string> = {
+        'NA': 'NA1',
+        'EUW': 'EUW1',
+        'EUNE': 'EUN1',
+        'KR': 'KR',
+        'JP': 'JP1',
+        'BR': 'BR1',
+        'LAN': 'LA1',
+        'LAS': 'LA2',
+        'OCE': 'OC1',
+      };
 
-      // Call the ingestion API
+      // Call the ingestion API - let backend handle tag variations
       const response = await ingestPlayerData({
-        summonerName: formattedSummonerName,
-        region: `${region}1`, // Convert NA -> NA1, EUW -> EUW1, etc.
+        summonerName: summonerName.trim(), // Send as-is, backend will try tag variations
+        region: regionMap[region] || `${region}1`,
         maxMatches: 50, // Fetch up to 50 recent matches
       });
 
@@ -72,8 +73,15 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#010A13] via-[#0A1428] to-[#1a0f2e]"></div>
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+           style={{
+             backgroundImage: 'url(https://images.contentstack.io/v3/assets/blt731acb42bb3d1659/blt370fa5f8c8a99f4e/5db05fa8347d1c6baa57be25/RiotX_ChampionTheme_Splashes_WP_3840x2160_Lux.jpg)',
+           }}>
+      </div>
+      
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#010A13]/95 via-[#0A1428]/90 to-[#1a0f2e]/95"></div>
       
       {/* Hexagonal Grid Pattern */}
       <div className="absolute inset-0 opacity-5" style={{

@@ -6,12 +6,24 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
 export class RiftRewindStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // ========================================================================
+    // Secrets Manager - Riot API Key
+    // ========================================================================
+
+    // Import existing secret (created manually or via CLI)
+    const riotApiKeySecret = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      'RiotApiKeySecret',
+      'rift-rewind/riot-api-key'
+    );
 
     // ========================================================================
     // S3 Buckets
@@ -101,6 +113,9 @@ export class RiftRewindStack extends cdk.Stack {
     matchesTable.grantReadWriteData(lambdaRole);
     insightsTable.grantReadWriteData(lambdaRole);
 
+    // Grant access to read the Riot API key secret
+    riotApiKeySecret.grantRead(lambdaRole);
+
     // Bedrock permissions
     lambdaRole.addToPolicy(
       new iam.PolicyStatement({
@@ -133,7 +148,7 @@ export class RiftRewindStack extends cdk.Stack {
       role: lambdaRole,
       environment: {
         ...commonEnv,
-        RIOT_API_KEY: process.env.RIOT_API_KEY || 'RGAPI-demo-key',
+        RIOT_API_KEY_SECRET_NAME: riotApiKeySecret.secretName,
         PROCESSING_LAMBDA: 'rift-rewind-processing',
       },
     });

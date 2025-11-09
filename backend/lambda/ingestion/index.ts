@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import { RiotClient } from './riot-client';
 
 /**
@@ -18,11 +19,47 @@ import { RiotClient } from './riot-client';
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const lambdaClient = new LambdaClient({ region: process.env.AWS_REGION });
 const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+const secretsClient = new SecretsManagerClient({ region: process.env.AWS_REGION });
 
 const RAW_BUCKET = process.env.RAW_BUCKET!;
 const PLAYERS_TABLE = process.env.PLAYERS_TABLE!;
 const PROCESSING_LAMBDA = process.env.PROCESSING_LAMBDA || 'rift-rewind-processing';
-const RIOT_API_KEY = process.env.RIOT_API_KEY || 'RGAPI-demo-key';
+const RIOT_API_KEY_SECRET_NAME = process.env.RIOT_API_KEY_SECRET_NAME;
+
+// Cache the API key to avoid repeated Secrets Manager calls
+let cachedApiKey: string | null = null;
+
+/**
+ * Get Riot API key from Secrets Manager (with caching)
+ */
+async function getRiotApiKey(): Promise<string> {
+  if (cachedApiKey) {
+    return cachedApiKey;
+  }
+
+  if (!RIOT_API_KEY_SECRET_NAME) {
+    throw new Error('RIOT_API_KEY_SECRET_NAME environment variable is not set');
+  }
+
+  try {
+    const response = await secretsClient.send(
+      new GetSecretValueCommand({
+        SecretId: RIOT_API_KEY_SECRET_NAME,
+      })
+    );
+
+    if (!response.SecretString) {
+      throw new Error('Secret value is empty');
+    }
+
+    cachedApiKey = response.SecretString;
+    console.log('✅ Successfully retrieved Riot API key from Secrets Manager');
+    return cachedApiKey;
+  } catch (error) {
+    console.error('❌ Failed to retrieve Riot API key from Secrets Manager:', error);
+    throw new Error('Failed to retrieve API key from Secrets Manager');
+  }
+}
 
 interface IngestionRequest {
   summonerName: string;
@@ -56,27 +93,103 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     console.log('Fetching data for:', { summonerName, region, maxMatches });
 
+    // Get Riot API key from Secrets Manager
+    const RIOT_API_KEY = await getRiotApiKey();
+
     // Initialize Riot API client
     const riotClient = new RiotClient(RIOT_API_KEY, region);
 
     // Step 1: Get player PUUID using Riot ID format (gameName#tagLine)
-    // If summonerName contains '#', split it; otherwise use summonerName as gameName and region as tagLine
-    let puuid: string;
+    let puuid: string | undefined;
     let gameName: string;
-    let tagLine: string;
+    let tagLine: string | undefined;
     
     if (summonerName.includes('#')) {
+      // User provided full Riot ID
       const [name, tag] = summonerName.split('#');
       gameName = name;
       tagLine = tag;
-      const result = await riotClient.getSummonerByRiotId(gameName, tagLine);
-      puuid = result.puuid;
+      
+      try {
+        const result = await riotClient.getSummonerByRiotId(gameName, tagLine);
+        puuid = result.puuid;
+        gameName = result.gameName;
+        tagLine = result.tagLine;
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          return {
+            statusCode: 404,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            },
+            body: JSON.stringify({
+              error: 'Player not found',
+              message: `Summoner "${gameName}#${tagLine}" not found. Please verify the Riot ID is correct. You can find your Riot ID in the League client (it's displayed as "Name#TAG").`,
+            }),
+          };
+        }
+        throw error;
+      }
     } else {
-      // Fallback: try old API (may not work for all accounts)
+      // User only provided name - try common tag variations for the region
       gameName = summonerName;
-      tagLine = region.replace('1', ''); // NA1 -> NA
-      const result = await riotClient.getSummonerByRiotId(gameName, tagLine);
-      puuid = result.puuid;
+      
+      // Common tag patterns by region
+      const commonTags: Record<string, string[]> = {
+        'KR': ['KR1', 'KR', 'kr1'],
+        'NA1': ['NA1', 'NA', 'na1'],
+        'EUW1': ['EUW', 'EUW1', 'euw'],
+        'EUNE': ['EUNE', 'EUN1', 'eune'],
+        'JP1': ['JP1', 'JP', 'jp1'],
+        'BR1': ['BR1', 'BR', 'br1'],
+        'LA1': ['LA1', 'LAN', 'lan'],
+        'LA2': ['LA2', 'LAS', 'las'],
+        'OC1': ['OCE', 'OC1', 'oce'],
+        'TR1': ['TR1', 'TR', 'tr1'],
+        'RU': ['RU', 'RU1', 'ru'],
+      };
+
+      const tagsToTry = commonTags[region] || [region, region.replace('1', '')];
+      
+      // Try each tag variation
+      for (const tryTag of tagsToTry) {
+        try {
+          console.log(`Trying ${gameName}#${tryTag}`);
+          const result = await riotClient.getSummonerByRiotId(gameName, tryTag);
+          puuid = result.puuid;
+          tagLine = result.tagLine; // Use the actual tag from Riot
+          gameName = result.gameName; // Use the actual name from Riot (correct capitalization)
+          console.log(`✅ Found player: ${gameName}#${tagLine}`);
+          break;
+        } catch (error: any) {
+          if (error.response?.status === 404) {
+            // Not found with this tag, try next
+            continue;
+          }
+          // Other error, rethrow
+          throw error;
+        }
+      }
+
+      if (!puuid || !tagLine) {
+        return {
+          statusCode: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          },
+          body: JSON.stringify({
+            error: 'Player not found',
+            message: `Summoner "${summonerName}" not found in region ${region}. Please use the full Riot ID format: "Name#TAG" (e.g., "Chovy#KR1", "Faker#KR1", "Doublelift#NA1"). You can find your Riot ID in the League client.`,
+            suggestedFormats: tagsToTry.map(tag => `${summonerName}#${tag}`),
+          }),
+        };
+      }
     }
     
     const playerId = `${region}_${puuid.slice(0, 8)}`;

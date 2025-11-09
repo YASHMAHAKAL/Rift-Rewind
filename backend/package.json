@@ -9,10 +9,11 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "deploy": "cdk deploy --all",
+    "deploy": "cdk deploy --all && ./scripts/update-endpoints.sh",
     "destroy": "cdk destroy --all",
     "synth": "cdk synth",
-    "diff": "cdk diff"
+    "diff": "cdk diff",
+    "update-endpoints": "./scripts/update-endpoints.sh"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.130",
