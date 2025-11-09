@@ -205,8 +205,12 @@ export class RiftRewindStack extends cdk.Stack {
       },
     });
 
-    const apiIntegration = new apigateway.LambdaIntegration(apiLambda);
-    const ingestionIntegration = new apigateway.LambdaIntegration(ingestionLambda);
+    const apiIntegration = new apigateway.LambdaIntegration(apiLambda, {
+      proxy: true,
+    });
+    const ingestionIntegration = new apigateway.LambdaIntegration(ingestionLambda, {
+      proxy: true,
+    });
 
     // POST /ingest - Trigger data ingestion
     const ingestResource = api.root.addResource('ingest', {
@@ -282,10 +286,14 @@ export class RiftRewindStack extends cdk.Stack {
       value: frontendBucket.bucketName,
     });
 
-    // Write API endpoint to a file for frontend to consume
-    const fs = require('fs');
+    // Note: Cannot write endpoints.json here because api.url and distribution.distributionDomainName
+    // are CDK tokens that only resolve after deployment.
+    // Instead, manually update frontend/public/endpoints.json after deployment with the values from
+    // CDK outputs, or use a post-deployment script.
     
-    // Create endpoints.json file for frontend
+    // Uncomment below if you want to generate a file with tokens (for reference only):
+    /*
+    const fs = require('fs');
     const endpointsConfig = {
       apiEndpoint: api.url,
       cloudFrontUrl: `https://${distribution.distributionDomainName}`,
@@ -293,21 +301,17 @@ export class RiftRewindStack extends cdk.Stack {
       accountId: this.account,
       timestamp: new Date().toISOString()
     };
-    
-    // Write to both shared directory (for reference) and frontend public directory (for Vite)
     const sharedPath = path.join(__dirname, '../../shared/endpoints.json');
     const frontendPath = path.join(__dirname, '../../frontend/public/endpoints.json');
-    
-    // Ensure directories exist
     [path.dirname(sharedPath), path.dirname(frontendPath)].forEach(dir => {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
     });
-    
     const configContent = JSON.stringify(endpointsConfig, null, 2);
     fs.writeFileSync(sharedPath, configContent);
     fs.writeFileSync(frontendPath, configContent);
     console.log(`✅ API endpoints written to ${sharedPath} and ${frontendPath}`);
+    */
   }
 }

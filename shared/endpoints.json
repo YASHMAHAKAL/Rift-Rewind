@@ -1,4 +1,7 @@
 {
-  "apiEndpoint": "https://r3jqyy7wo0.execute-api.us-east-1.amazonaws.com/prod/",
-  "cloudFrontUrl": "https://d3ig6wavfk9x5j.cloudfront.net"
+  "apiEndpoint": "https://${Token[TOKEN.151]}.execute-api.us-east-1.${Token[AWS.URLSuffix.8]}/${Token[TOKEN.171]}/",
+  "cloudFrontUrl": "https://${Token[TOKEN.262]}",
+  "region": "us-east-1",
+  "accountId": "480731385241",
+  "timestamp": "2025-11-09T12:37:39.587Z"
 }
