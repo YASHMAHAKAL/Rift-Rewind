@@ -21,9 +21,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
@@ -44,7 +44,9 @@ jobs:
           aws-region: us-east-1
 
       - name: CDK Bootstrap
-        run: npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1
+        run: npx cdk bootstrap aws://$AWS_ACCOUNT_ID/us-east-1
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
       - name: CDK Deploy
         run: npx cdk deploy --all --require-approval never
