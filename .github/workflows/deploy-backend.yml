@@ -44,15 +44,10 @@ jobs:
           aws-region: us-east-1
 
       - name: CDK Bootstrap
-        run: npx cdk bootstrap aws://$AWS_ACCOUNT_ID/us-east-1
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: npx cdk bootstrap aws://480731385241/us-east-1
 
       - name: CDK Deploy
         run: npx cdk deploy --all --require-approval never
-        env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
-          CDK_DEFAULT_REGION: us-east-1
 
       - name: Get Stack Outputs
         id: stack-outputs

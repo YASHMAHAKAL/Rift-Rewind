@@ -46,7 +46,7 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync dist/ s3://rift-rewind-frontend-${{ secrets.AWS_ACCOUNT_ID }} --delete
+          aws s3 sync dist/ s3://rift-rewind-frontend-480731385241 --delete
 
       - name: Get CloudFront Distribution ID
         id: get-cloudfront
