@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'frontend/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
 jobs:
@@ -44,10 +46,17 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync dist/ s3://${{ secrets.FRONTEND_BUCKET_NAME }} --delete
+          aws s3 sync dist/ s3://rift-rewind-frontend-${{ secrets.AWS_ACCOUNT_ID }} --delete
+
+      - name: Get CloudFront Distribution ID
+        id: get-cloudfront
+        run: |
+          CLOUDFRONT_ID=$(aws cloudfront list-distributions --output json | grep -E '"Id".*E[A-Z0-9]{12,13}' | head -1 | awk -F'"' '{print $4}')
+          echo "distribution_id=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
+          echo "CloudFront Distribution ID: $CLOUDFRONT_ID"
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id ${{ steps.get-cloudfront.outputs.distribution_id }} \
             --paths "/*"
