@@ -1,7 +1,7 @@
 {
   "apiEndpoint": "https://zwhnu7r1yc.execute-api.us-east-1.amazonaws.com/prod/",
-  "cloudFrontUrl": "https://d3oswdw8p9wrd0.cloudfront.net",
+  "cloudFrontUrl": "https://de3oswdw8p9wrd0.cloudfront.net",
   "region": "us-east-1",
   "accountId": "480731385241",
-  "timestamp": "2025-11-10T00:00:00.000Z"
+  "timestamp": "2025-11-10T12:50:00.000Z"
 }
