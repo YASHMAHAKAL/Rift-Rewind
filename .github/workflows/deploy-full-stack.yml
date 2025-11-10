@@ -1,23 +1,17 @@
 name: Deploy Full Stack
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'shared/**'
-      - '.github/workflows/**'
-  workflow_dispatch:
 
 jobs:
   deploy-backend:
-    name: Deploy Backend Infrastructure
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
+    outputs:
+      api_endpoint: ${{ steps.get-outputs.outputs.api_endpoint }}
+      cloudfront_id: ${{ steps.get-outputs.outputs.cloudfront_id }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,13 +23,12 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        working-directory: backend
         run: npm ci
 
-      - name: Install Lambda Dependencies
-        run: cd lambda/ingestion && npm ci
-
-      - name: Build TypeScript
+      - name: Build backend TypeScript
+        working-directory: backend
         run: npm run build
 
       - name: Configure AWS credentials
@@ -45,14 +38,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: CDK Bootstrap
-        run: npx cdk bootstrap aws://480731385241/us-east-1
-
-      - name: CDK Deploy
+      - name: Deploy CDK Stack
+        working-directory: backend
         run: npx cdk deploy --all --require-approval never
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: us-east-1
 
       - name: Get Stack Outputs
-        id: stack-outputs
+        id: get-outputs
         run: |
           API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name RiftRewindStack --query 'Stacks[0].Outputs[?OutputKey==`APIEndpoint`].OutputValue' --output text)
           CLOUDFRONT_ID=$(aws cloudfront list-distributions --output json | grep -E '"Id".*E[A-Z0-9]{12,13}' | head -1 | awk -F'"' '{print $4}')
@@ -61,21 +55,44 @@ jobs:
           echo "✅ API Endpoint: $API_ENDPOINT"
           echo "✅ CloudFront ID: $CLOUDFRONT_ID"
 
-    outputs:
-      api_endpoint: ${{ steps.stack-outputs.outputs.api_endpoint }}
-      cloudfront_id: ${{ steps.stack-outputs.outputs.cloudfront_id }}
+      - name: Update endpoints.json files
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+          CLOUDFRONT_DOMAIN=$(echo "${{ steps.get-outputs.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]' | sed 's/^/d/' | sed 's/$/.cloudfront.net/')
+          
+          # Update shared/endpoints.json
+          cat > shared/endpoints.json <<EOF
+          {
+            "apiEndpoint": "${{ steps.get-outputs.outputs.api_endpoint }}",
+            "cloudFrontUrl": "https://${CLOUDFRONT_DOMAIN}",
+            "region": "us-east-1",
+            "accountId": "${{ secrets.AWS_ACCOUNT_ID }}",
+            "timestamp": "${TIMESTAMP}"
+          }
+          EOF
+          
+          # Copy to frontend/public/endpoints.json
+          cp shared/endpoints.json frontend/public/endpoints.json
+          
+          echo "✅ Updated endpoints.json files"
+          cat shared/endpoints.json
+
+      - name: Commit updated endpoints
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add shared/endpoints.json frontend/public/endpoints.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update API endpoints after deployment [skip ci]" && git push)
 
   deploy-frontend:
-    name: Deploy Frontend
     needs: deploy-backend
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
+    
     steps:
-      - name: Checkout code
+      - name: Checkout code (with updated endpoints)
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -84,28 +101,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
+        working-directory: frontend
         run: npm ci
 
-      - name: Create .env file
-        run: |
-          echo "VITE_API_URL=${{ needs.deploy-backend.outputs.api_endpoint }}" > .env
-          cat .env
-
       - name: Build frontend
+        working-directory: frontend
         run: npm run build
-
-      - name: Verify build output
-        run: |
-          echo "Checking if build folder exists..."
-          ls -la
-          if [ -d "build" ]; then
-            echo "✅ build/ folder found"
-            ls -la build/
-          else
-            echo "❌ build/ folder not found!"
-            exit 1
-          fi
+        env:
+          VITE_API_URL: ${{ needs.deploy-backend.outputs.api_endpoint }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -114,18 +118,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Get Frontend Bucket Name
+        id: get-bucket
+        run: |
+          BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name RiftRewindStack --query 'Stacks[0].Outputs[?OutputKey==`FrontendBucketName`].OutputValue' --output text)
+          echo "bucket_name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+          echo "✅ Frontend Bucket: $BUCKET_NAME"
+
       - name: Deploy to S3
         run: |
-          aws s3 sync build/ s3://rift-rewind-frontend-480731385241 --delete
+          aws s3 sync frontend/dist/ s3://${{ steps.get-bucket.outputs.bucket_name }} --delete
+          echo "✅ Deployed to S3"
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ needs.deploy-backend.outputs.cloudfront_id }} \
             --paths "/*"
+          echo "✅ CloudFront cache invalidated"
 
-      - name: Deployment Summary
+      - name: Print URLs
         run: |
           echo "🚀 Deployment Complete!"
-          echo "📍 Frontend: https://d1wnzolg96lql7.cloudfront.net"
-          echo "📍 API: ${{ needs.deploy-backend.outputs.api_endpoint }}"
+          echo "📡 API Endpoint: ${{ needs.deploy-backend.outputs.api_endpoint }}"
+          CLOUDFRONT_DOMAIN=$(echo "${{ needs.deploy-backend.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]')
+          echo "🌐 CloudFront URL: https://d${CLOUDFRONT_DOMAIN}.cloudfront.net"

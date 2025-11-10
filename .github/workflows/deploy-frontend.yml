@@ -1,8 +1,11 @@
-name: Deploy Frontend (Manual Only)
+name: Deploy Frontend
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
-  workflow_call:
 
 jobs:
   deploy:
@@ -25,12 +28,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create .env file
-        run: |
-          echo "VITE_API_URL=https://4ehmfkh383.execute-api.us-east-1.amazonaws.com/prod" > .env
-
       - name: Build frontend
         run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.API_URL }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -41,17 +42,10 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync dist/ s3://rift-rewind-frontend-480731385241 --delete
-
-      - name: Get CloudFront Distribution ID
-        id: get-cloudfront
-        run: |
-          CLOUDFRONT_ID=$(aws cloudfront list-distributions --output json | grep -E '"Id".*E[A-Z0-9]{12,13}' | head -1 | awk -F'"' '{print $4}')
-          echo "distribution_id=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
-          echo "CloudFront Distribution ID: $CLOUDFRONT_ID"
+          aws s3 sync dist/ s3://${{ secrets.FRONTEND_BUCKET_NAME }} --delete
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ steps.get-cloudfront.outputs.distribution_id }} \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
