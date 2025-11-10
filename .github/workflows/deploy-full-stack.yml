@@ -64,7 +64,7 @@ jobs:
       - name: Update endpoints.json files
         run: |
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
-          CLOUDFRONT_DOMAIN=$(echo "${{ steps.get-outputs.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]' | sed 's/^/d/' | sed 's/$/.cloudfront.net/')
+          CLOUDFRONT_DOMAIN=$(echo "${{ steps.get-outputs.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]').cloudfront.net
           
           # Update shared/endpoints.json
           cat > shared/endpoints.json <<EOF
@@ -153,4 +153,4 @@ jobs:
           echo "🚀 Deployment Complete!"
           echo "📡 API Endpoint: ${{ needs.deploy-backend.outputs.api_endpoint }}"
           CLOUDFRONT_DOMAIN=$(echo "${{ needs.deploy-backend.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]')
-          echo "🌐 CloudFront URL: https://d${CLOUDFRONT_DOMAIN}.cloudfront.net"
+          echo "🌐 CloudFront URL: https://${CLOUDFRONT_DOMAIN}.cloudfront.net"

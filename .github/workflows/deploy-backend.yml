@@ -51,7 +51,7 @@ jobs:
         run: |
           API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name RiftRewindStack --query 'Stacks[0].Outputs[?OutputKey==`APIEndpoint`].OutputValue' --output text)
           CLOUDFRONT_ID=$(aws cloudfront list-distributions --output json | grep -E '"Id".*E[A-Z0-9]{12,13}' | head -1 | awk -F'"' '{print $4}')
-          CLOUDFRONT_DOMAIN=$(echo "${CLOUDFRONT_ID}" | tr '[:upper:]' '[:lower:]')
+          CLOUDFRONT_DOMAIN=$(echo "${CLOUDFRONT_ID}" | tr '[:upper:]' '[:lower:]').cloudfront.net
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
           
           echo "✅ API Endpoint: $API_ENDPOINT"
@@ -61,7 +61,7 @@ jobs:
           cat > shared/endpoints.json <<EOF
           {
             "apiEndpoint": "${API_ENDPOINT}",
-            "cloudFrontUrl": "https://d${CLOUDFRONT_DOMAIN}.cloudfront.net",
+            "cloudFrontUrl": "https://${CLOUDFRONT_DOMAIN}",
             "region": "us-east-1",
             "accountId": "${{ secrets.AWS_ACCOUNT_ID }}",
             "timestamp": "${TIMESTAMP}"
