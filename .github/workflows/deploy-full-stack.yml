@@ -138,7 +138,7 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync frontend/dist/ s3://${{ steps.get-bucket.outputs.bucket_name }} --delete
+          aws s3 sync frontend/build/ s3://${{ steps.get-bucket.outputs.bucket_name }} --delete
           echo "✅ Deployed to S3"
 
       - name: Invalidate CloudFront cache
