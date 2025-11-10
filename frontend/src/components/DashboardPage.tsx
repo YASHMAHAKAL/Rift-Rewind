@@ -74,17 +74,18 @@ export function DashboardPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background Image with Overlay */}
-      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+      <div className="absolute inset-0 bg-cover bg-no-repeat" 
            style={{
-             backgroundImage: 'url(https://images.contentstack.io/v3/assets/blt731acb42bb3d1659/blt370fa5f8c8a99f4e/5db05fa8347d1c6baa57be25/RiotX_ChampionTheme_Splashes_WP_3840x2160_Lux.jpg)',
+             backgroundImage: 'url(/dashboard-bg.png)',
+             backgroundPosition: '65% center',
            }}>
       </div>
       
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#010A13]/95 via-[#0A1428]/90 to-[#1a0f2e]/95"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#010A13]/85 via-[#0A1428]/80 to-[#1a0f2e]/85"></div>
       
       {/* Hexagonal Grid Pattern */}
-      <div className="absolute inset-0 opacity-5" style={{
+      <div className="absolute inset-0 opacity-10" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='%23C89B3C' stroke-width='1'/%3E%3C/svg%3E")`,
         backgroundSize: '60px 60px'
       }}></div>

@@ -84,7 +84,6 @@ export function LandingPage() {
 
           {/* Hero Visual */}
           <div className="relative w-full max-w-4xl mx-auto h-96 mt-16">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#010A13] via-transparent to-transparent z-10"></div>
             <div className="relative w-full h-full flex items-center justify-center">
               {/* Hexagon Frame */}
               <div className="absolute w-80 h-80 animate-spin-slow" style={{
