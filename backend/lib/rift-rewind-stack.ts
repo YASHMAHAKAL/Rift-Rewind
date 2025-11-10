@@ -50,8 +50,7 @@ export class RiftRewindStack extends cdk.Stack {
     // Frontend hosting bucket
     const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
       bucketName: `rift-rewind-frontend-${this.account}`,
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html',
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       publicReadAccess: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
