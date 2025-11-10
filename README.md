@@ -26,73 +26,95 @@ A visually stunning, AI-powered web application that transforms a League of Lege
 
 **Frontend:**
 - React 18 + TypeScript + Vite
-- Tailwind CSS + Framer Motion (animations)
-- D3.js / Visx (data visualizations)
-- Hosted on AWS S3 + CloudFront
+- Tailwind CSS + shadcn/ui components
+- Recharts (data visualizations)
+- React Router (navigation)
+- html2canvas + jsPDF (PDF generation)
+- Hosted on AWS S3 + CloudFront CDN
 
 **Backend:**
 - AWS Lambda (Node.js/TypeScript)
 - API Gateway (REST endpoints)
-- Amazon Bedrock (LLM for narratives)
-- Amazon OpenSearch (vector embeddings + RAG)
-- AWS Step Functions (orchestration)
-- Amazon DynamoDB (data storage)
-- Amazon S3 (raw data, cache, assets)
+- Amazon Bedrock (Claude 3 Haiku - LLM for AI insights)
+- Amazon DynamoDB (3 tables: Players, Matches, Insights)
+- Riot Games API client with rate limiting
 
 **Data Source:**
-- Riot Games League of Legends API (Match-V5)
+- Riot Games League of Legends API (Match-V5, Summoner-V4)
 
 **Infrastructure:**
 - AWS CDK (TypeScript) - Infrastructure as Code
-- GitHub Actions (CI/CD)
+- GitHub Actions (CI/CD with automated deployments)
+- Docker bundling for Lambda dependencies
 
 ### Architecture Diagram
 
-`````
+```
 ┌─────────────┐
 │ Riot Games  │
 │   API       │
 └──────┬──────┘
        │
        v
-┌─────────────────────────────────────────────────┐
-│              AWS Cloud                           │
-│                                                  │
-│  ┌──────────┐    ┌────────────┐   ┌──────────┐│
-│  │ Lambda   │───▶│ S3 Bucket  │   │ DynamoDB ││
-│  │ Ingestion│    │ Raw Data   │   │ Matches  ││
-│  └──────────┘    └────────────┘   └──────────┘│
-│       │                                         │
-│       v                                         │
-│  ┌──────────┐    ┌────────────┐                │
-│  │ Lambda   │───▶│ OpenSearch │                │
-│  │ Process  │    │ Embeddings │                │
-│  └──────────┘    └────────────┘                │
-│       │                                         │
-│       v                                         │
-│  ┌──────────┐    ┌────────────┐                │
-│  │ Bedrock  │───▶│ S3 Bucket  │                │
-│  │ LLM      │    │ Insights   │                │
-│  └──────────┘    └────────────┘                │
-│       │                                         │
-│       v                                         │
-│  ┌──────────┐    ┌────────────┐                │
-│  │ API      │◀───│ CloudFront │                │
-│  │ Gateway  │    │ + S3 Web   │                │
-│  └──────────┘    └────────────┘                │
-│       │                 ▲                       │
-└───────┼─────────────────┼───────────────────────┘
-        │                 │
-        v                 │
-   ┌─────────────────────────┐
-   │   React Frontend        │
-   │   (User Browser)        │
-   └─────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│              AWS Cloud (us-east-1)                    │
+│                                                       │
+│  ┌──────────────┐         ┌────────────────┐        │
+│  │ API Gateway  │◀────────│  CloudFront    │        │
+│  │ REST API     │         │  CDN           │        │
+│  └──────┬───────┘         └────────┬───────┘        │
+│         │                          │                 │
+│         v                          v                 │
+│  ┌──────────────────────────────────────┐           │
+│  │         Lambda Functions             │           │
+│  │  ┌──────────┐  ┌──────────┐         │           │
+│  │  │Ingestion │  │Processing│         │           │
+│  │  │(Riot API)│  │(Analysis)│         │           │
+│  │  └────┬─────┘  └────┬─────┘         │           │
+│  │       │             │                │           │
+│  │  ┌────v─────┐  ┌───v──────┐         │           │
+│  │  │   AI     │  │   API    │         │           │
+│  │  │(Bedrock) │  │(Handlers)│         │           │
+│  │  └────┬─────┘  └──────────┘         │           │
+│  └───────┼────────────────────────────┘           │
+│          │                                         │
+│          v                                         │
+│  ┌──────────────────────────────┐                 │
+│  │      Amazon DynamoDB          │                 │
+│  │  ┌──────────┐ ┌──────────┐   │                 │
+│  │  │ Players  │ │ Matches  │   │                 │
+│  │  │  Table   │ │  Table   │   │                 │
+│  │  └──────────┘ └──────────┘   │                 │
+│  │  ┌──────────┐                │                 │
+│  │  │ Insights │                │                 │
+│  │  │  Table   │                │                 │
+│  │  └──────────┘                │                 │
+│  └──────────────────────────────┘                 │
+│                                                    │
+│  ┌──────────────────────────────┐                 │
+│  │         S3 Bucket             │                 │
+│  │   (Frontend Static Hosting)   │                 │
+│  │   - index.html                │                 │
+│  │   - React app bundles         │                 │
+│  │   - Assets & images           │                 │
+│  └──────────────────────────────┘                 │
+│                                                    │
+└────────────────────────────────────────────────────┘
+                    │
+                    v
+           ┌─────────────────┐
+           │  React Frontend │
+           │  (User Browser) │
+           └─────────────────┘
 ```
 
 ---
 
 ## 🚀 Quick Start
+
+### Live Demo
+
+🌐 **Production URL:** https://d2c0pe955in7w2.cloudfront.net
 
 ### Prerequisites
 
@@ -104,7 +126,8 @@ A visually stunning, AI-powered web application that transforms a League of Lege
 
 1. **Clone the repository**
 ```bash
-cd "/home/yash/Rift-Rewind: 2025"
+git clone https://github.com/YASHMAHAKAL/Rift-Rewind.git
+cd Rift-Rewind
 ```
 
 2. **Install frontend dependencies**
@@ -119,33 +142,36 @@ cd ../backend
 npm install
 ```
 
-4. **Configure environment variables**
+4. **Configure Riot API Key**
 
-Create `backend/.env`:
-```env
-RIOT_API_KEY=your_riot_api_key_here
-AWS_REGION=us-east-1
-AWS_ACCOUNT_ID=your_aws_account_id
-```
-
-Create `frontend/.env`:
-```env
-VITE_API_URL=http://localhost:3000
+Add your Riot API key to AWS Secrets Manager or Lambda environment variables:
+```bash
+aws secretsmanager create-secret \
+  --name RiotApiKey \
+  --secret-string "your_riot_api_key_here" \
+  --region us-east-1
 ```
 
 5. **Deploy AWS infrastructure**
 ```bash
 cd backend
-npm run deploy
+npm run build
+cdk deploy --all
 ```
 
-6. **Run frontend locally**
+6. **Deploy frontend**
 ```bash
 cd ../frontend
-npm run dev
+npm run build
+# Frontend automatically deployed via GitHub Actions on push
 ```
 
-Open http://localhost:5173
+7. **Run frontend locally (development)**
+```bash
+cd frontend
+npm run dev
+# Opens on http://localhost:3000 (or next available port)
+```
 
 ---
 
@@ -196,43 +222,64 @@ rift-rewind/
 
 ## 🎬 Demo Video
 
-▶️ [Watch Demo on YouTube](https://youtube.com/placeholder) (3 minutes)
+▶️ Demo video coming soon (will be added before Devpost submission)
 
 ---
 
 ## 🧠 How It Works
 
-### 1. Data Ingestion
-- User provides Riot summoner name/PUUID
-- Lambda fetches full-year match history via Riot API
-- Raw match data stored in S3
-- Rate limiting + caching to respect API limits
+### 1. Data Ingestion (`/ingest` endpoint)
+- User enters summoner name and region on dashboard
+- Ingestion Lambda fetches player profile via Riot API (Summoner-V4)
+- Retrieves match history (up to 50 recent matches)
+- Stores player data in DynamoDB Players table
+- Stores individual match data in DynamoDB Matches table
+- Rate limiting implemented to respect Riot API limits
 
-### 2. Data Processing
-- Extract per-match stats (KDA, CS, gold, vision, objectives)
-- Compute aggregates (win rate, trends, champion mastery)
-- Create match fragments for RAG (early game, teamfights, objectives)
+### 2. Data Processing (Processing Lambda)
+- Extracts per-match statistics:
+  - KDA (Kills, Deaths, Assists)
+  - CS (Creep Score) and CS/min
+  - Gold earned, damage dealt
+  - Vision score, wards placed
+  - Champion played, role, lane
+- Computes aggregate statistics:
+  - Overall win rate and trends
+  - Champion mastery and most played
+  - Performance metrics (avg KDA, avg CS, etc.)
+  - Strengths and weaknesses identification
 
-### 3. AI Generation
-- Generate embeddings for match fragments (Amazon Bedrock)
-- Index embeddings in OpenSearch vector database
-- Retrieve relevant evidence using semantic search
-- Generate insights using Amazon Bedrock LLM:
-  - Hero Summary (season narrative)
-  - Coaching tips (actionable improvements)
-  - Playstyle analysis
-  - Roast/Hidden Gems (fun modes)
+### 3. AI Insight Generation (AI Lambda + Bedrock)
+- Uses Amazon Bedrock with Claude 3 Haiku model
+- Generates personalized insights:
+  - **Season Summary**: 200-word narrative of player's journey
+  - **Top Achievements**: 3 highlighted successes
+  - **Improvement Areas**: 3 actionable coaching tips
+  - **Playstyle Analysis**: Detailed breakdown with radar chart data
+  - **Hidden Gems**: Non-obvious strengths discovered
+  - **Fun Roasts**: Playful, constructive critique
+- Insights cached in DynamoDB Insights table
 
-### 4. Caching & Optimization
-- Cache LLM outputs in S3/DynamoDB
-- Batch processing via Step Functions
-- Cost optimization through small models + smart prompting
+### 4. API Delivery (API Lambda + API Gateway)
+- RESTful endpoints:
+  - `GET /profile/{puuid}` - Player profile data
+  - `GET /matches/{puuid}` - Match history
+  - `GET /insights/{puuid}` - AI-generated insights
+  - `POST /ingest` - Trigger data ingestion
+- CORS enabled for frontend access
+- Error handling with proper status codes
 
 ### 5. Frontend Rendering
-- Interactive timeline with smooth animations
-- Match detail cards with evidence linking
-- Social share card generator (Canvas API)
-- Responsive, accessible design
+- **Landing Page**: Hero section with call-to-action
+- **Dashboard**: Search interface for player lookup
+- **Player Detail Page**: 
+  - Interactive statistics with Recharts visualizations
+  - Radar chart for playstyle analysis
+  - Champion performance cards
+  - AI insights display
+  - Shareable PDF card generation (html2canvas + jsPDF)
+- Smooth animations and responsive design
+- Glass morphism UI effects with Tailwind CSS
 
 ---
 
@@ -259,64 +306,77 @@ rift-rewind/
 
 ## 🧪 Testing
 
-See [TESTING.md](./docs/TESTING.md) for detailed testing instructions.
+**Live Production Testing:**
 
-**Quick test:**
+1. Visit: https://d2c0pe955in7w2.cloudfront.net
+2. Enter any valid League of Legends summoner name
+3. Select region (NA, EUW, KR, etc.)
+4. Click "Analyze Player"
+5. View AI-generated insights and statistics
+
+**API Testing:**
+
 ```bash
-# Test with demo account
-curl https://api.rift-rewind.example.com/player/demo
+# Test API endpoint health
+curl https://zwhnu7r1yc.execute-api.us-east-1.amazonaws.com/prod/
 
-# Or use the web UI
-# Navigate to https://rift-rewind.example.com
-# Click "Try Demo" button
+# Ingest player data (replace with valid summoner name)
+curl -X POST https://zwhnu7r1yc.execute-api.us-east-1.amazonaws.com/prod/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "summonerName": "Hide on bush",
+    "region": "KR",
+    "maxMatches": 20
+  }'
+
+# Get player insights (replace {puuid} with actual PUUID)
+curl https://zwhnu7r1yc.execute-api.us-east-1.amazonaws.com/prod/insights/{puuid}
 ```
 
-**Demo accounts:**
-- `demo-player-1`: Mid lane main, steady improvement
-- `demo-player-2`: Support main, vision specialist
-- `demo-player-3`: ADC main, comeback king
+See [TESTING.md](./docs/TESTING.md) for detailed testing documentation.
 
 ---
 
 ## 📊 AWS Services Used
 
-- **Amazon Bedrock**: LLM for narrative generation and insights
-- **Amazon OpenSearch**: Vector embeddings and semantic search
-- **AWS Lambda**: Serverless compute for data processing and APIs
-- **Amazon DynamoDB**: NoSQL database for user data and matches
-- **Amazon S3**: Object storage for raw data, cache, and static assets
-- **AWS Step Functions**: Orchestration of multi-step pipelines
-- **Amazon API Gateway**: REST API endpoints
-- **Amazon CloudFront**: CDN for fast global delivery
-- **Amazon Cognito**: User authentication (optional)
-- **AWS CloudWatch**: Monitoring and logging
-- **AWS X-Ray**: Distributed tracing
-- **AWS IAM**: Security and access control
-- **AWS CDK**: Infrastructure as Code
+- **Amazon Bedrock**: Claude 3 Haiku for AI-powered narrative generation and insights
+- **AWS Lambda**: 4 serverless functions (Ingestion, Processing, AI, API handlers)
+- **Amazon DynamoDB**: 3 NoSQL tables (Players, Matches, Insights) with on-demand pricing
+- **Amazon S3**: Static website hosting for React frontend
+- **Amazon API Gateway**: REST API with CORS support
+- **Amazon CloudFront**: Global CDN for fast content delivery
+- **AWS CloudWatch**: Monitoring, logging, and metrics
+- **AWS IAM**: Security and least-privilege access control
+- **AWS CDK**: Infrastructure as Code (TypeScript)
+- **AWS Secrets Manager**: Secure API key storage (recommended)
+
+**Total Services:** 10 AWS services integrated
 
 ---
 
 ## 💰 Cost Optimization
 
-- Small Bedrock models (cost-effective)
-- Aggressive caching (precompute outputs)
-- Batch processing (reduce API calls)
-- Rate limiting (respect Riot API)
-- DynamoDB on-demand pricing
-- Lambda cold start optimization
+- **Claude 3 Haiku**: Cost-effective model (~$0.25 per 1M input tokens)
+- **Insight caching**: DynamoDB stores generated insights to avoid re-processing
+- **DynamoDB on-demand**: Pay only for actual reads/writes
+- **Lambda optimization**: Efficient code with minimal cold starts
+- **Docker bundling**: Only necessary dependencies packaged
+- **Rate limiting**: Respect Riot API limits, avoid unnecessary calls
+- **CloudFront caching**: Reduces S3 read requests
 
-**Estimated cost for hackathon:** ~$20-50 with AWS credits
+**Estimated cost with AWS credits:** ~$10-30 for hackathon duration
 
 ---
 
 ## 🔒 Security & Privacy
 
-- API keys stored in AWS Secrets Manager
-- Encryption at rest (S3, DynamoDB) with KMS
-- Encryption in transit (HTTPS only)
-- Least-privilege IAM roles
-- No PII storage (hashed player IDs)
-- Rate limiting + DDoS protection (CloudFront)
+- **HTTPS Only**: CloudFront enforces SSL/TLS encryption in transit
+- **IAM Roles**: Lambda functions use least-privilege IAM roles
+- **DynamoDB Encryption**: Data encrypted at rest by default
+- **CORS Configuration**: Strict origin policies on API Gateway
+- **No PII Storage**: Only public Riot data (PUUID, summoner names)
+- **Rate Limiting**: Riot API client respects rate limits
+- **CloudFront Protection**: DDoS protection and geographic restrictions available
 
 ---
 
@@ -327,6 +387,8 @@ MIT License - See [LICENSE](./LICENSE)
 ---
 
 ## 👥 Team
+
+**Solo Developer:** Yash Mahakal (@YASHMAHAKAL)
 
 Built with ❤️ for AWS Rift Rewind Hackathon 2025
 
@@ -342,9 +404,8 @@ Built with ❤️ for AWS Rift Rewind Hackathon 2025
 
 ## 📧 Contact
 
-Questions? [support@example.com](mailto:support@example.com)
-
-**Devpost:** [View Submission](https://devpost.com/software/rift-rewind)
+**GitHub:** [@YASHMAHAKAL](https://github.com/YASHMAHAKAL)  
+**Devpost:** Coming soon (will be added after submission)
 
 ---
 
