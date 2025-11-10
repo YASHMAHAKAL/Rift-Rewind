@@ -141,7 +141,18 @@ export class RiftRewindStack extends cdk.Stack {
       functionName: 'rift-rewind-ingestion',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/ingestion')),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/ingestion'), {
+        bundling: {
+          image: lambda.Runtime.NODEJS_18_X.bundlingImage,
+          command: [
+            'bash', '-c', [
+              'cp -r /asset-input/* /asset-output/',
+              'cd /asset-output',
+              'npm install --omit=dev',
+            ].join(' && '),
+          ],
+        },
+      }),
       timeout: cdk.Duration.seconds(300), // Increased for multiple API calls
       memorySize: 512,
       role: lambdaRole,
