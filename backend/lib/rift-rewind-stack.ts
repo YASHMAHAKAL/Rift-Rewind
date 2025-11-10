@@ -144,11 +144,12 @@ export class RiftRewindStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/ingestion'), {
         bundling: {
           image: lambda.Runtime.NODEJS_18_X.bundlingImage,
+          user: 'root',
           command: [
             'bash', '-c', [
               'cp -r /asset-input/* /asset-output/',
               'cd /asset-output',
-              'npm install --omit=dev',
+              'npm install --omit=dev --cache /tmp/.npm',
             ].join(' && '),
           ],
         },
