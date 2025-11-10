@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       api_endpoint: ${{ steps.get-outputs.outputs.api_endpoint }}
+      cloudfront_domain: ${{ steps.get-outputs.outputs.cloudfront_domain }}
       cloudfront_id: ${{ steps.get-outputs.outputs.cloudfront_id }}
     
     steps:
@@ -55,22 +56,24 @@ jobs:
         id: get-outputs
         run: |
           API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name RiftRewindStack --query 'Stacks[0].Outputs[?OutputKey==`APIEndpoint`].OutputValue' --output text)
+          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name RiftRewindStack --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontURL`].OutputValue' --output text)
           CLOUDFRONT_ID=$(aws cloudfront list-distributions --output json | grep -E '"Id".*E[A-Z0-9]{12,13}' | head -1 | awk -F'"' '{print $4}')
           echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "cloudfront_domain=$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
           echo "cloudfront_id=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
           echo "✅ API Endpoint: $API_ENDPOINT"
+          echo "✅ CloudFront Domain: $CLOUDFRONT_DOMAIN"
           echo "✅ CloudFront ID: $CLOUDFRONT_ID"
 
       - name: Update endpoints.json files
         run: |
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
-          CLOUDFRONT_DOMAIN=$(echo "${{ steps.get-outputs.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]').cloudfront.net
           
           # Update shared/endpoints.json
           cat > shared/endpoints.json <<EOF
           {
             "apiEndpoint": "${{ steps.get-outputs.outputs.api_endpoint }}",
-            "cloudFrontUrl": "https://${CLOUDFRONT_DOMAIN}",
+            "cloudFrontUrl": "${{ steps.get-outputs.outputs.cloudfront_domain }}",
             "region": "us-east-1",
             "accountId": "${{ secrets.AWS_ACCOUNT_ID }}",
             "timestamp": "${TIMESTAMP}"
@@ -152,5 +155,4 @@ jobs:
         run: |
           echo "🚀 Deployment Complete!"
           echo "📡 API Endpoint: ${{ needs.deploy-backend.outputs.api_endpoint }}"
-          CLOUDFRONT_DOMAIN=$(echo "${{ needs.deploy-backend.outputs.cloudfront_id }}" | tr '[:upper:]' '[:lower:]')
-          echo "🌐 CloudFront URL: https://${CLOUDFRONT_DOMAIN}.cloudfront.net"
+          echo "🌐 CloudFront URL: ${{ needs.deploy-backend.outputs.cloudfront_domain }}"
